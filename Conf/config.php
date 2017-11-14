@@ -3,11 +3,11 @@ return array(
     'DEBUG_PAGE'=>true,
     'REWRITE'=>false,//伪静态规则
 
-    'DOMAIN_NAME' => 'http://127.0.0.1',
+    'DOMAIN_NAME' => 'http://47.95.7.100',
 
     'url_suffix'=>'.html',
     'url_explode'=>'/',
-//    'PLUGIN_DOWN'=>'http://bbs.hyphp.cn/' ,//官方下载服务器 ,这个不是你的域名填写地方 ，没事勿修改
+    'PLUGIN_DOWN'=>'http://bbs.hyphp.cn/' ,//官方下载服务器 ,这个不是你的域名填写地方 ，没事勿修改
 
     'HY_URL'=>array(
         'action'=>array(
@@ -30,7 +30,7 @@ return array(
     //数据库名称
     "SQL_NAME" => "yjblog",
     //数据库地址
-    "SQL_IP"=>"47.95.7.100",
+    "SQL_IP"=>"127.0.0.1",
     //数据库账号
     'SQL_USER' => 'root',
     //数据密码
