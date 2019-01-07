@@ -1,4 +1,5 @@
 <?php
+define('LSystem','local');
 $common = array(
     'DEBUG_PAGE'=>true,
     'REWRITE'=>false,//伪静态规则
@@ -65,7 +66,7 @@ if(LSystem == 'local'){
     $temp = array(
         //数据库类型
         "SQL_TYPE" => "mysql",
-        //数据库名称
+        //数据库名称DOMAIN_NAME
         "SQL_NAME" => "donghu",
         //数据库地址
         "SQL_IP"=>"localhost",
@@ -73,6 +74,7 @@ if(LSystem == 'local'){
         'SQL_USER' => 'root',
         //数据密码
         'SQL_PASS' => 'Liufeng@123456',
+        'DOMAIN_NAME' => 'http://local.yjblog.com',
     );
 }else{
     $temp = array(
@@ -86,6 +88,7 @@ if(LSystem == 'local'){
         'SQL_USER' => 'root',
         //数据密码
         'SQL_PASS' => 'liu1qaz0okm',
+        'DOMAIN_NAME' => 'http://www.donghu520.cn',
     );
 }
 
