@@ -11,7 +11,7 @@ define('DEBUG',false);
 define('PLUGIN_ON'  ,true);
 define('PLUGIN_ON_FILE',true);
 define('PLUGIN_MORE_LANG_ON',true);
-define('LSystem','local');
+define('LSystem','rel');
 
 require  'HY/HYPHP.php';
 /*
