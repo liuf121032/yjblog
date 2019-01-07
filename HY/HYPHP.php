@@ -87,7 +87,7 @@ class Index extends Action {
 }");
 
 //修稿WEB服务器 脚本语言声明
-header('X-Powered-By:HYPHP');
+header('X-Powered-By:DhCity');
 
 //命令行运行
 if(isset($argv) && count($argv) == 3)

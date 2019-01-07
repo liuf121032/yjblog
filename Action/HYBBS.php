@@ -135,7 +135,7 @@ class HYBBS extends Action {
     }
     //初始化板块
     protected function init_forum(){
-        //{hook a_hybbs_init_forum_1}
+//        {hook a_hybbs_init_forum_1}
         $forum = $this->CacheObj->forum;
         if(empty($forum) || DEBUG){ //调试模式 每次都生成缓存
             //{hook a_hybbs_init_forum_2}

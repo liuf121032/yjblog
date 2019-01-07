@@ -1,5 +1,5 @@
 <?php
-return array(
+$common = array(
     'DEBUG_PAGE'=>true,
     'REWRITE'=>false,//伪静态规则
 
@@ -22,7 +22,7 @@ return array(
         )
     ),
     'MORE_LANG_LIB_FILE'=>array(
-            (defined('MYLIB_PATH') ? MYLIB_PATH : '') . 'more_lang_lib_conf/hybbs.php',
+        (defined('MYLIB_PATH') ? MYLIB_PATH : '') . 'more_lang_lib_conf/hybbs.php',
     ),
 
     //数据库类型
@@ -34,7 +34,7 @@ return array(
     //数据库账号
     'SQL_USER' => 'root',
     //数据密码
-    'SQL_PASS' => 'Liufeng@123456',
+    'SQL_PASS' => '',
     //数据库字符集
     'SQL_CHARSET' => 'utf8',
     //数据库端口
@@ -58,7 +58,37 @@ return array(
     'ADMIN_GROUP' =>1,
     'lang_switch_on'=>true,
 
-
-
-
 );
+
+$temp = array();
+if(LSystem == 'local'){
+    $temp = array(
+        //数据库类型
+        "SQL_TYPE" => "mysql",
+        //数据库名称
+        "SQL_NAME" => "donghu",
+        //数据库地址
+        "SQL_IP"=>"localhost",
+        //数据库账号
+        'SQL_USER' => 'root',
+        //数据密码
+        'SQL_PASS' => 'Liufeng@123456',
+    );
+}else{
+    $temp = array(
+        //数据库类型
+        "SQL_TYPE" => "mysql",
+        //数据库名称
+        "SQL_NAME" => "donghu",
+        //数据库地址
+        "SQL_IP"=>"localhost",
+        //数据库账号
+        'SQL_USER' => 'root',
+        //数据密码
+        'SQL_PASS' => 'liu1qaz0okm',
+    );
+}
+
+$common  = array_merge($common,$temp);
+
+return $common;

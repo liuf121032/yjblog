@@ -186,7 +186,7 @@ class HY
         
 
         
-        //var_dump($s);
+//        var_dump($s);
         
         if (DEBUG) {
             return self::hy_exception( new \ErrorException( $Error_str, 0, $Error_Type, $Error_file, $Error_line ) );

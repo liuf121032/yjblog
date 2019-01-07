@@ -6,10 +6,12 @@ if(version_compare(PHP_VERSION,'5.4.0','<')){
 
 define('HYBBS_V'			,'2.1.3');
 define('INDEX_PATH' 		, str_replace('\\', '/', dirname(__FILE__)).'/');
-define('DEBUG'      ,(is_file(INDEX_PATH . 'DEBUG'))?false:true);
+//define('DEBUG'      ,(is_file(INDEX_PATH . 'DEBUG'))?false:true);
+define('DEBUG',false);
 define('PLUGIN_ON'  ,true);
 define('PLUGIN_ON_FILE',true);
 define('PLUGIN_MORE_LANG_ON',true);
+define('LSystem','local');
 
 require  'HY/HYPHP.php';
 /*
