@@ -81,7 +81,7 @@ if(LSystem == 'local'){
         //数据库名称
         "SQL_NAME" => "donghu",
         //数据库地址
-        "SQL_IP"=>"localhost",
+        "SQL_IP"=>"127.0.0.1",
         //数据库账号
         'SQL_USER' => 'root',
         //数据密码
