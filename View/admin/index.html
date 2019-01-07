@@ -138,6 +138,12 @@
 
 							</tr>
 							<tr>
+								<td>
+									伪静态条件
+								</td>
+								<td id="re">检测中...</td>
+							</tr>
+							<tr>
 								<td>服务器IP地址</td>
 								<td><?php if('/'==DIRECTORY_SEPARATOR){echo $_SERVER['SERVER_ADDR'];}else{echo @gethostbyname($_SERVER['SERVER_NAME']);} ?></td>
 							</tr>
@@ -151,7 +157,7 @@
 								<td>
 									<div class="progress" style="height: 20px;margin-bottom: 0;">
 										<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: <?php echo 100-number_format((disk_free_space(INDEX_PATH)/disk_total_space(INDEX_PATH))*100,0); ?>%">
-									    	<span class="">已用<?php echo 100-number_format((disk_free_space(INDEX_PATH)/disk_total_space(INDEX_PATH))*100,0); ?>% 剩余<?php echo number_format(disk_free_space(INDEX_PATH)/1024/1024,0);?> MB / 总量<?php echo number_format(disk_total_space(INDEX_PATH)/1024/1024,0);?> MB</span>
+									    	<span class="">已用<?php echo 100-number_format((disk_free_space(INDEX_PATH)/disk_total_space(INDEX_PATH))*100,0); ?>% 剩余<?php echo number_format(disk_free_space(INDEX_PATH)/1024/1024,0,'.','.');?> G / 总量<?php echo number_format(disk_total_space(INDEX_PATH)/1024/1024,0,'.','.');?> G</span>
 									  	</div>
 									</div>
 									
@@ -284,7 +290,7 @@ foreach ($able as $key=>$value) {
 	  	</div>
 	</div>
 
-</div>
+
 {include footer}
 <script type="text/javascript">
 	function add_mess(info,on){
@@ -387,4 +393,16 @@ foreach ($able as $key=>$value) {
 	$.get('{php HYBBS_URL('admin','getip')}',function(e){
 		$("#ip").text(e.ip);
 	},'json');
+	$.ajax({
+		url:'{#WWW}admin{#EXP}is_rewrite',
+		type:'get',
+		dataType:'html',
+		success:function(e){
+			if(e=='on')
+				return $('#re').html('<label class="label label-success"><i class="fa fa-check"></i> 支持</label>');
+			$('#re').html('<label class="label label-danger"><i class="fa fa-close"></i> 不支持</label>');
+		},error:function(e){
+			$('#re').html('<label class="label label-danger"><i class="fa fa-close"></i> 不支持</label>');
+		}
+	})
 </script>

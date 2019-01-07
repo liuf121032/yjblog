@@ -39,6 +39,12 @@ return array(
 						        PDO::ATTR_CASE => PDO::CASE_NATURAL,
 						        PDO::ATTR_PERSISTENT => true //长连接
 						    ),
+
+	//驱动导入
 	'vendor'			=> array('vendor'),
+
+
+	//CDN
+	'CDN_IP'				=> false,
 
 );

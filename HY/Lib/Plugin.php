@@ -1,5 +1,9 @@
 <?php
 namespace HY\Lib;
+/**
+ * Plugin 插件控制器
+ * 处理流程: 先Re后Hook
+*/
 class Plugin{
 	public static function run($filePath,$cache_filePath,$class = ''){
 		//缓存文件不存在
@@ -16,7 +20,7 @@ class Plugin{
             /*if(PLUGIN_MORE_LANG_ON){
                 static $more_lang_lib = null;
                 if($more_lang_lib == null){
-                    $more_lang_lib = new Lib\more_lang_lib;
+                    $more_lang_lib = new more_lang_lib;
                 }
                 $code = $more_lang_lib->decode($code);
             }

@@ -3,7 +3,7 @@ return array(
     'DEBUG_PAGE'=>true,
     'REWRITE'=>false,//伪静态规则
 
-    'DOMAIN_NAME' => 'http://47.95.7.100',
+    'DOMAIN_NAME' => 'http://local.yjblog.com',
 
     'url_suffix'=>'.html',
     'url_explode'=>'/',
@@ -28,13 +28,13 @@ return array(
     //数据库类型
     "SQL_TYPE" => "mysql",
     //数据库名称
-    "SQL_NAME" => "yjblog",
+    "SQL_NAME" => "donghu",
     //数据库地址
-    "SQL_IP"=>"127.0.0.1",
+    "SQL_IP"=>"localhost",
     //数据库账号
     'SQL_USER' => 'root',
     //数据密码
-    'SQL_PASS' => 'liu1qaz0okm',
+    'SQL_PASS' => 'Liufeng@123456',
     //数据库字符集
     'SQL_CHARSET' => 'utf8',
     //数据库端口
@@ -52,7 +52,7 @@ return array(
     //目前用于用户信息COOKIE加密
     //缓存文件名加密
     //头像文件名加密
-    'MD5_KEY' => 'BE7Cptpmohlob5AC',
+    'MD5_KEY' => 'zrmX0baUe1Omwa09',
 
     //管理员用户组 ID
     'ADMIN_GROUP' =>1,

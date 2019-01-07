@@ -92,6 +92,16 @@
 			        <a href="{php HYBBS_URL('my',$v['user']);}" class="info-user">{$v.user}</a>
 					</h4>
 			    	<p class="time"><em># {$k+1}{$_LANG['楼']}</em> {php echo humandate($v['atime'])} 
+			    	<a class="ic" href="{php HYBBS_URL('thread','post',$v['pid']);}" ajax="true" pos="right">
+			        	
+			        	{if $v['posts']}
+			        	 {$v.posts} 条评论
+			        	{else}
+			        	 评论
+			        	{/if}
+			        </a>
+
+
 			    	{if IS_LOGIN }
 	                    {if $v['uid'] == NOW_UID || NOW_GID == C("ADMIN_GROUP")}
 	                        <!-- 帖子作者 或者 管理员 -->

@@ -82,12 +82,14 @@ DROP TABLE IF EXISTS hy_friend;
 DROP TABLE IF EXISTS hy_log;
 DROP TABLE IF EXISTS hy_online;
 DROP TABLE IF EXISTS hy_post;
+DROP TABLE IF EXISTS hy_post_post;
 DROP TABLE IF EXISTS hy_thread;
 DROP TABLE IF EXISTS hy_threadgold;
 DROP TABLE IF EXISTS hy_user;
 DROP TABLE IF EXISTS hy_usergroup;
 DROP TABLE IF EXISTS hy_vote_post;
 DROP TABLE IF EXISTS hy_vote_thread;
+
 
 
 
@@ -128,7 +130,7 @@ DROP TABLE IF EXISTS hy_vote_thread;
 
     CREATE TABLE `hy_chat_count` (
     `uid` int(10) UNSIGNED NOT NULL,
-    `c` int(10) UNSIGNED NOT NULL DEFAULT '0',
+    `c` int(11) NOT NULL DEFAULT '0',
     `atime` int(10) UNSIGNED NOT NULL,
     UNIQUE KEY `uid` (`uid`)
     ) ENGINE={$table_type} DEFAULT CHARSET=utf8;
@@ -155,6 +157,7 @@ DROP TABLE IF EXISTS hy_vote_thread;
     ('2.0.12', 1),
     ('2.0.17', 1),
     ('2.0.20', 1),
+    ('2.1.0', 1),
     ('thread', 0);
 
 
@@ -252,7 +255,7 @@ DROP TABLE IF EXISTS hy_vote_thread;
     CREATE TABLE `hy_friend` (
     `uid1` int(10) UNSIGNED NOT NULL,
     `uid2` int(10) UNSIGNED NOT NULL,
-    `c` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',
+    `c` int(11) NOT NULL DEFAULT '0',
     `atime` int(10) UNSIGNED NOT NULL DEFAULT '0',
     `state` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
     PRIMARY KEY (`uid1`,`uid2`) USING BTREE,
@@ -268,8 +271,8 @@ DROP TABLE IF EXISTS hy_vote_thread;
     CREATE TABLE `hy_log` (
     `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     `uid` int(10) UNSIGNED NOT NULL,
-    `gold` int(10) NOT NULL,
-    `credits` int(10) UNSIGNED NOT NULL,
+    `gold` int(11) NOT NULL,
+    `credits` int(11) NOT NULL,
     `content` varchar(32) NOT NULL,
     `atime` int(10) UNSIGNED NOT NULL,
     PRIMARY KEY (`id`),
@@ -311,6 +314,19 @@ DROP TABLE IF EXISTS hy_vote_thread;
     PRIMARY KEY (`pid`) USING BTREE,
     KEY `tid` (`tid`),
     KEY `uid` (`uid`)
+    ) ENGINE={$table_type} DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+    CREATE TABLE `hy_post_post` (
+      `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+      `pid` int(10) UNSIGNED NOT NULL,
+      `tid` int(10) UNSIGNED NOT NULL,
+      `uid` int(10) UNSIGNED NOT NULL,
+      `content` longtext NOT NULL,
+      `atime` int(10) UNSIGNED NOT NULL,
+      `goods` int(10) UNSIGNED DEFAULT '0',
+      `nos` int(10) UNSIGNED NOT NULL DEFAULT '0',
+        UNIQUE KEY `id` (`id`),
+        KEY `pid` (`pid`)
     ) ENGINE={$table_type} DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 
@@ -377,10 +393,11 @@ DROP TABLE IF EXISTS hy_vote_thread;
     `salt` varchar(8) NOT NULL,
     `threads` int(10) UNSIGNED NOT NULL,
     `posts` int(10) UNSIGNED NOT NULL,
+    `post_ps` int(10) UNSIGNED NOT NULL,
     `atime` int(10) UNSIGNED NOT NULL,
     `gid` smallint(2) UNSIGNED NOT NULL DEFAULT '0',
-    `gold` int(10) NOT NULL DEFAULT '0' COMMENT '金钱',
-    `credits` int(10) NOT NULL DEFAULT '0',
+    `gold` int(11) NOT NULL DEFAULT '0' COMMENT '金钱',
+    `credits` int(11) NOT NULL DEFAULT '0',
     `etime` int(10) UNSIGNED NOT NULL DEFAULT '0',
     `ps` varchar(40) DEFAULT '',
     `fans` int(10) UNSIGNED NOT NULL DEFAULT '0',
@@ -408,6 +425,7 @@ DROP TABLE IF EXISTS hy_vote_thread;
     CREATE TABLE `hy_usergroup` (
     `gid` int(10) UNSIGNED NOT NULL,
     `credits` int(11) NOT NULL DEFAULT '-1',
+    `credits_max` int(11) NOT NULL DEFAULT '-1',
     `space_size` int(10) UNSIGNED DEFAULT '4294967295',
     `chat_size` int(10) UNSIGNED NOT NULL DEFAULT '4294967295',
     `name` varchar(12) NOT NULL,

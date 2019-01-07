@@ -3,12 +3,12 @@ namespace Action;
 use HY\Action;
 !defined('HY_PATH') && exit('HY_PATH not defined.');
 class Post extends HYBBS {
-
 	public $tid=0;
+	public $pid=0;
 	public $posts=0;
 	public $title;
 	public $content;
-
+	public $ante_type=0;
 	public function __construct() {
 		parent::__construct();
 		//{hook a_post_init}
@@ -22,6 +22,7 @@ class Post extends HYBBS {
 			}
 
 		}
+		
 		
 	}
 	//发表评论
@@ -85,9 +86,6 @@ class Post extends HYBBS {
 		$this->content = mb_substr(trim(strip_tags($content)), 0,$this->conf['summary_size']);
 
 		//{hook a_post_post_6}
-		//通知@ 用户
-		if($UsergroupLib->read(NOW_GID,'mess',$this->_usergroup))
-			$content = $this->tag($content);
 
 		//写入评论数据
 		$Post = S("Post");
@@ -99,6 +97,16 @@ class Post extends HYBBS {
 			'atime'	  => NOW_TIME,
 			'etime'	  => NOW_TIME
 		));
+		$this->pid = $pid = $Post->id();
+
+		//@用户
+		$this->ante_type = 'post';
+		if($UsergroupLib->read(NOW_GID,'mess',$this->_usergroup))
+			$content = $this->ante($content);
+		$Post->update(['content'=>$content],['pid'=>$pid]);
+
+
+		//{hook a_post_post_66}
 		//分类 评论数量+1
 		M("Forum")->update_int($thread_data['fid'],'posts');
 		$this->_forum[$thread_data['fid']]['posts']++;
@@ -129,7 +137,7 @@ class Post extends HYBBS {
 		$User->update_int(NOW_UID,'credits','+',$this->conf['credits_post']);
 		$this->_user['posts']++;
 		if($thread_data['uid'] != NOW_UID){
-			M("Chat")->sys_send($thread_data['uid'],'<a href="'. HYBBS_URLA('my',NOW_USER).'" target="_blank">['.NOW_USER.']</a> 回复了你的主题 ['.$thread_data['title'].'] <a href="'. HYBBS_URLA('thread',$thread_data['tid']).'" target="_blank">点击查看</a>');
+			M("Chat")->sys_send($thread_data['uid'],'<a href="'. HYBBS_URLA('my',NOW_USER).'" target="_blank">['.NOW_USER.']</a> 回复了你的主题 <a href="'. HYBBS_URLA('thread',$thread_data['tid']).'" target="_blank">['.$thread_data['title'].']</a>');
 		}
 		if($this->conf['gold_post'] != 0 || $this->conf['credits_post'] != 0){
 			S("Log")->insert(array(
@@ -158,36 +166,8 @@ class Post extends HYBBS {
         }
 
 
-		//管理员无法升级
-		if(NOW_GID != C("ADMIN_GROUP")){
-			//获取用户积分
-			$user_credits = $User->get_credits(NOW_UID);
-			//echo $user_credits;
-			//用户组升级检测
-			$tmp_group = array();
-			foreach ($this->_usergroup as $v) {
-				//过滤无法升级,积分过大,已经是该用户组的数组删除
-				if($v['credits'] != -1 && $user_credits > $v['credits'] && NOW_GID != $v['gid']){ //过滤无法升级用户组
-					
-					$tmp_group[]=$v;	
-				}
-			}
-			//冒泡排序
-			$tmp = array('gid'=>-1,'credits'=>-1);
-			
-			foreach ($tmp_group as $v) {
-				if($v['credits'] > $tmp['credits'] && $v['credits'] > $this->_usergroup[NOW_GID]['credits'])
-					$tmp=array('gid'=>$v['gid'],'credits'=>$v['credits']);
-
-			}
-			
-			if($tmp['gid']!= -1){
-				
-				$User->set_gid(NOW_UID,$tmp['gid']);
-			}
-			
-			
-		}
+		//用户组升级检测
+		M('Usergroup')->check_up(NOW_UID);
 		
 
 		//{hook a_post_post_v}
@@ -216,12 +196,14 @@ class Post extends HYBBS {
 
 
 			//获取提交数据
-            $forum = intval(X("post.forum"));
+            $forum = X("post.forum",'-1'); if(empty($forum))$forum=-1;
             $title = trim(X("post.title"));
             $title = htmlspecialchars($title);
             $tgold = intval(X("post.tgold"));
             $thide = intval(X("post.thide"));
             
+
+
             //{hook a_post_index_44}
             if(!$UsergroupLib->read(NOW_GID,'thide',$this->_usergroup)){
             	if($thide)
@@ -237,13 +219,13 @@ class Post extends HYBBS {
 
             //去除泰文音标
 			$title = preg_replace( '/\p{Thai}/u' , '' , $title );
+			$this->title=$title;
 
             $content = X('post.content');
             if (get_magic_quotes_gpc())
   				$content = stripslashes($content);
             
 			if(NOW_GID != C("ADMIN_GROUP")){
-				//$content=$this->uh($content);
 				$Kses =L("Kses");
         		$content = $Kses->Parse($content);
 			}
@@ -261,37 +243,24 @@ class Post extends HYBBS {
 			if(mb_strlen($title) > $this->conf['titlesize'])
 				return $this->json(array('error'=>false,'info'=>'标题长度不能大于'.$this->conf['titlesize'].'个字符'));
 			if($forum < 0 ){
-				return $this->json(array('error'=>false,'info'=>'请选择一个分类,板块'));
+				return $this->json(array('error'=>false,'info'=>'请选择一个分类'));
 			}
 			//{hook a_post_index_7}
 			//用户组在分类下的权限判断
-			if(!L("Forum")->is_comp($forum,NOW_GID,'thread',$this->_forum[$forum]['json']))
-				return $this->json(array('error'=>false,'info'=>'你没有权限在该板块发表帖子'));
-
-			//{hook a_post_index_8}
-
-
-            if(!isset($this->_forum[$forum])){
+			if(!isset($this->_forum[$forum])){
 				if(empty($this->_forum[$forum]['id']))
 					return $this->json(array('error'=>false,'info'=>'不存在该分类'));
 			}
+			//{hook a_post_index_8}
+			if(!L("Forum")->is_comp($forum,NOW_GID,'thread',$this->_forum[$forum]['json']))
+				return $this->json(array('error'=>false,'info'=>'你没有权限在该板块发表帖子'));
 			//{hook a_post_index_88}
-
-
-            $Count = M("Count");
-            
-            $this->title=$title;
-
-
             //去除image 所有属性
             //$content = preg_replace("/<img.*?src=(\"|\')(.*?)\\1[^>]*>/is",'<img src="$2" />', $content);
 
             //去除图标中的width 与 height 防止在页面上 变形
             //$content = preg_replace('/(<img.*?)((width)=[\'"]+[0-9]+[\'"]+)/is','$1', $content);
 			$content = preg_replace('/(<img.*?)((height)=[\'"]+[0-9]+[\'"]+)/is','$1', $content);
-
-
-
 			//{hook a_post_index_9}
             //获取所有图片地址
 			$pattern="/\<img.*?src\=\"(.*?)\"[^>]*>/i";
@@ -314,7 +283,6 @@ class Post extends HYBBS {
 
 			//{hook a_post_index_10}
 			
-
 			
 			//主题数据
             $Thread = S("Thread");
@@ -334,9 +302,10 @@ class Post extends HYBBS {
             $this->tid = $tid = $Thread->id();
             //{hook a_post_index_100}
             
-            // 权限判断是否可 @
+            //@用户
+			$this->ante_type = 'thread';
 			if($UsergroupLib->read(NOW_GID,'mess',$this->_usergroup))
-				$content = $this->tag($content); //@ 用户函数
+				$content = $this->ante($content); //@ 用户函数
 
             //主题帖子数据
             $Post = S("Post");
@@ -448,38 +417,9 @@ class Post extends HYBBS {
 			$this->CacheObj->rm("index_index_{$forum}_1_New");
 			
 
-			//var_dump();
 
-			//管理员无法升级
-			if(NOW_GID != C("ADMIN_GROUP")){
-				//获取用户积分
-				$user_credits = $User->get_credits(NOW_UID);
-				//echo $user_credits;
-				//用户组升级检测
-				$tmp_group = array();
-				foreach ($this->_usergroup as $v) {
-					//过滤无法升级,积分过大,已经是该用户组的数组删除
-					if($v['credits'] != -1 && $user_credits > $v['credits'] && NOW_GID != $v['gid']){ //过滤无法升级用户组
-						
-						$tmp_group[]=$v;	
-					}
-				}
-				//冒泡排序
-				$tmp = array('gid'=>-1,'credits'=>-1);
-				
-				foreach ($tmp_group as $v) {
-					if($v['credits'] > $tmp['credits'] && $v['credits'] > $this->_usergroup[NOW_GID]['credits'])
-						$tmp=array('gid'=>$v['gid'],'credits'=>$v['credits']);
-
-				}
-				
-				if($tmp['gid']!= -1){
-					
-					$User->set_gid(NOW_UID,$tmp['gid']);
-				}
-				
-				
-			}
+			//用户组升级检测
+			M('Usergroup')->check_up(NOW_UID);
 
 			//{hook a_post_index_v}
             $this->json(array('error'=>true,'info'=>'发表成功','id'=>$tid));
@@ -491,77 +431,111 @@ class Post extends HYBBS {
 
 	}
 
-	//过滤
-	private function uh($str)
-	{
-		//{hook a_post_uh_1}
-		$farr = array(
-			"/<(?)(script|style|html|body|title|link|meta|div)([^>]*?)>/isu",
-			"/(<[^>]*)on[a-za-z]+s*=([^>]*>)/isu",
-		);
-		$tarr = array(
-			" ",
-			" ",
-		);
+	//发表子评论
+	public function post_post(){
+		//{hook a_post_post_post_0}
+		if(IS_POST && IS_AJAX){
+			//{hook a_post_post_post_1}
+			if($this->_user['ban_post']){
+				$this->json(array('error'=>false,'info'=>'您的账号已被禁言!'));
+			}
+			//{hook a_post_post_post_2}
+			$pid = intval(X('post.pid'));
+			$content = trim(X('post.content'));
+			$content = str_replace(['<div><br></div>','<div>','</div>','<p>','</p>'],"\n",$content);
+			$content = strip_tags($content); //去除HTML标签并
+			$content = preg_replace( '/\p{Thai}/u' , '' , $content );
+			$content = str_replace(["\n\n","\n"],"<br>",$content);
+			$content = str_replace("<br><br>","<br>",$content);
+			$content = trim($content);
+			//{hook a_post_post_post_3}
+			
+			if(substr($content,-4) == '<br>')
+				$content = substr($content,0,-4);
+			if($content == '' || !mb_strlen($content))
+				$this->json(['error'=>false,'info'=>'请输入提交内容']);
+			
+			$Post = M('Post');
+			if(!$Post->is_pid($pid))
+				$this->json(['error'=>false,'info'=>'该帖子已被删除，无法评论！']);
+			//{hook a_post_post_post_4}
 
-		//$str = strip_tags($str,'<p><img><a><ul><li><blockquote><hr><table><colgroup><col><thead><tr><td><br><tbody><mark><video><embed><font><strike><i><b><h1><h2><h3><h4><h5><pre><code>');
+			$post_data = $Post->get_row($pid,['tid','uid','content']);
+			$tid = $post_data['tid'];
 
-		//$str = strip_tags($str,'<div>');
-		$str = str_replace(array('<div>','</div>'),'',$str);
-		$str = preg_replace( $farr,$tarr,$str);
-		$str = preg_replace('/class=".*?"/i', '', $str); //过滤自定义样式
-		
-		$str = preg_replace('/(<.*?)style\s*=.*?(\w+\s*=|\s*>)/i', "$1$2", $str);
-		//$str = L("Htmlsafe")->filter($str);
-		//$str = preg_replace('/class="lang-c\+\+"/i', 'class="lang-cpp"', $str); //过滤不带有lang的
-		//$str = preg_replace('/class=""/i', '', $str); //过滤不带有lang的
-		//$str = preg_replace('/class="(s+)"/i', '', $str); //过滤不带有lang的
-		//$str = preg_replace('/class="(?!lang).+?"/i', '', $str); //过滤不带有lang的
-		//$str = preg_replace('/class="[^"]*\s[^"]*"/i', '', $str); //过滤带有空格的
-		//$str = preg_replace('/(<.*?)class\s*=.*?(\w+\s*=|\s*>)/i', "$1$2", $str);
-		//preg_replace_callback('/(<.*?)class\s*=.*?(\w+\s*=|\s*>)/i', array($this,'unclass'), $str);
-		
-		$str = preg_replace('/(<[^>]*)src="data:image\/.*?"([^>]*>)/i', '', $str); // 过滤 转码图片字节
-		//{hook a_post_uh_2}
-		return $str;
+			$this->title = mb_substr(trim(strip_tags($post_data['content'])), 0,50);
+
+			if(!$tid)
+				$this->json(['error'=>false,'info'=>'无法找到原主题数据，无法评论！']);
+			//{hook a_post_post_post_5}
+			$this->pid = $pid;
+
+			
+			//@用户
+			$this->ante_type = 'post_post';
+			if(L("Usergroup")->read(NOW_GID,'mess',$this->_usergroup))
+				$content = $this->ante($content);
+			//{hook a_post_post_post_6}
+			$Thread = M('Thread');
+			$Post_post = S('Post_post');
+			$Post_post->insert([
+				'pid'=>$pid,
+				'tid'=>$tid,
+				'uid'=>NOW_UID,
+				'content'=>$content,
+				'atime'=>NOW_TIME,
+			]);
+			//{hook a_post_post_post_7}
+			$Post->update(['posts[+]'=>1],['pid'=>$pid]);
+			M('User')->update(['post_ps[+]'=>1],['uid'=>NOW_UID]);
+			$data = [
+				'avatar'=>$this->avatar(NOW_USER),
+				'user'=>NOW_USER,
+				'uid'=>NOW_UID,
+				'content'=>$content
+			];
+			//{hook a_post_post_post_8}
+			if(NOW_UID != $post_data['uid']){
+				M("Chat")->sys_send(
+					$post_data['uid'],
+					'<a href="'. HYBBS_URLA('my',NOW_USER) .'" target="_blank">['.NOW_USER.']</a> 评论了你的回复 <a href="'. HYBBS_URLA('thread','post',$pid).'" target="_blank">['.mb_substr(strip_tags($post_data['content']),0,25).']</a>'
+				);
+			}
+			//{hook a_post_post_post_v}
+			$this->json(['error'=>true,'info'=>'发表成功！','data'=>$data]);
+		}
 	}
-	//过滤class属性 
-	/*private function unclass($tagStr){
-		//print_r($tagStr);
-		var_dump($tagStr)
-	}*/
+
 	//@事件
-	private function tag($content){
-		//{hook a_post_tag_1}
-		return preg_replace_callback('/@([^:|： @<&])+/',array($this, 'taga'),$content);
+	private function ante($content){
+		//{hook a_post_ante_1}
+		return preg_replace_callback('/@([^:|： @<&])+/',array($this, 'ante_callback'),$content);
 	}
-	//''
-	private function taga($tagStr){
-		//{hook a_post_taga_1}
-		//print_r($tagStr);
+	private function ante_callback($tagStr){
+		//{hook a_post_ante_callback_1}
 		if(is_array($tagStr)) $tagStr = $tagStr[0];
 
 		$tagStr = stripslashes($tagStr);
 		$user = substr($tagStr,1);
 		$User = M("User");
-		//$Mess = M("Mess");
 		$Chat = M("Chat");
-		//echo $user,'|',NOW_USER;
 		static $tmp_user=array(); //@发送一次
 		if($user != NOW_USER){ //不能发送给自己
-			if(isset($tmp_user[$user]))
-				return $tagStr;
-			if($User->is_user($user)/* && isset($tmp_user[$user])*/){ //判断用户是否存在
-				$tmp_user[$user]=true;
-				M("Chat")->sys_send($User->user_to_uid($user),'<a href="'. HYBBS_URLA('my',NOW_USER).'" target="_blank">['.NOW_USER.']</a> @ 了你, 在主题 ['.$this->title.'] <a href="'. HYBBS_URLA('thread',$this->tid).'" target="_blank">点击查看</a>');
-				return '<span class="label label-primary">'.$tagStr.'</span>';
+			if(!isset($tmp_user[$user])){ //本帖未@过该用户名
+				if($User->is_user($user)/* && isset($tmp_user[$user])*/){ //判断用户是否存在
+					$tmp_user[$user]=true;
+					if($this->ante_type == 'thread')
+						$Chat->sys_send($User->user_to_uid($user),'<a href="'. HYBBS_URLA('my',NOW_USER).'" target="_blank">['.NOW_USER.']</a> 在发表主题 <a href="'. HYBBS_URLA('thread',$this->tid).'" target="_blank">['.$this->title.']</a> 的时候@了你');
+					elseif($this->ante_type == 'post')
+						$Chat->sys_send($User->user_to_uid($user),'<a href="'. HYBBS_URLA('my',NOW_USER).'" target="_blank">['.NOW_USER.']</a> 在评论 <a href="'. HYBBS_URLA('thread','post',$this->pid).'" target="_blank">['.$this->title.']</a> 的时候@了你');
+					elseif($this->ante_type == 'post_post')
+						$Chat->sys_send($User->user_to_uid($user),'<a href="'. HYBBS_URLA('my',NOW_USER).'" target="_blank">['.NOW_USER.']</a> 回复评论 <a href="'. HYBBS_URLA('thread','post',$this->pid).'" target="_blank">['.$this->title.']</a> 的时候@了你');
+					
+				}
 			}
+			return '<span class="label label-primary">'.$tagStr.'</span>';
 		}
-
-
-		//$tagStr = str_replace('@','',$tagStr);
 		return $tagStr;
-
 	}
 	//附件上传
 	public function uploadfile(){
@@ -657,7 +631,7 @@ class Post extends HYBBS {
 			
 			$d['file_path'] = WWW . "upload/userfile/".NOW_UID."/".$info['photo']['savename'];
 			$file_size = $info['photo']['size'] / 1024; //得到kb单位
-			if($file_size < 1 && $filesize > 0) //如果值为 0.x 则算作 1kb
+			if($file_size < 1 && $file_size > 0) //如果值为 0.x 则算作 1kb
 				$file_size = 1;
 			M("User")->update_int(NOW_UID,'file_size','+',$file_size);
 
@@ -927,17 +901,17 @@ class Post extends HYBBS {
 	public function vote(){
 		//{hook a_post_vote_1}
 		if(!IS_LOGIN)
-			return $this->json(array("error"=>false,"info"=>"你需要登录才可投票"));
+			return $this->json(["error"=>false,"info"=>"你需要登录才可投票"]);
 		$id=intval(X("post.id")); // 提交ID
 		$type = X("post.type"); //类型
 		if(!in_array($type,['thread1','thread2','post1','post2']))
-            return $this->json(array("error"=>false,"info"=>"投票类型不符"));
+            return $this->json(["error"=>false,"info"=>"投票类型不符"]);
 		$type1=substr($type,0,-1);
 
 		if($type1 == 'thread'){
 			$Thread = S("Thread");
 			if(!$Thread->has(['tid'=>$id]))
-				return $this->json(array("error"=>false,"info"=>"不存在该主题"));
+				return $this->json(["error"=>false,"info"=>"不存在该主题"]);
 			$obj = S("Vote_thread");
 			if(!$obj->has([
 				'AND'=>[

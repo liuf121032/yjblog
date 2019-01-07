@@ -364,12 +364,16 @@ function friend(uid,obj){
 }
 
 function url_back(test){
+	//if(document.referrer =='')
+		document.referrer=window.href_top;
 	if(window.debug)
 		console.log('来源:'+document.referrer);
+	
+	//return;
 	if(
 		document.referrer.search(WWW) == -1   || //别站跳转.
-		document.referrer == '' || //无来路
-		document.referrer.search("/post") != -1 
+		document.referrer == '' //|| //无来路
+		//document.referrer.search("/post") != -1 
 		//|| document.referrer.search("/user") != -1
 	){
 		if(window.debug)
@@ -423,13 +427,14 @@ $(document).ready(function(){
 var touchmove_handler = function (e) {
         e.preventDefault();
     };
+    window.href_top = document.referrer;
 function ajax_click(){
 		if(window.debug)
 	 		console.log('链接点击');
 		var _this = $(this);
 		var href = _this.attr('href');
 		var now_href=window.location.href;
-		
+		window.href_top = now_href;
 		var pos = _this.attr('pos');
 		var hide_menu = _this.attr('hide_menu');
 		if(pos != ''){
@@ -460,19 +465,19 @@ function ajax_click(){
 				type:'get',
 				dataType:'html',
 				success:function(data){
-					$.ajaxSetup({ async: false, cache: true });
-						if(iframe == 'true'){
-							
-							$(".body").html(data.match(/<section class="body".*?>([\s\S]*?)<\/section>/)[1]);
-							$(".body a[ajax=true]").click(ajax_click);
-							$(".hy-header-title").html(data.match(/<h1 class="hy-header-title".*?>([\s\S]*?)<\/h1>/)[1]);
-						}else{
-							setTimeout(function(){
-								obj.html(data.match(/<body.*?>([\s\S]*?)<\/body>/)[1]);
-								obj.find('a[ajax=true]').click(ajax_click);
-							},400);
-						}
-	            		$("title").text(data.match(/<title>([\s\S]*?)<\/title>/)[1]);
+					$.ajaxSetup({ cache: true });
+					if(iframe == 'true'){
+						
+						$(".body").html(data.match(/<section class="body".*?>([\s\S]*?)<\/section>/)[1]);
+						$(".body a[ajax=true]").click(ajax_click);
+						$(".hy-header-title").html(data.match(/<h1 class="hy-header-title".*?>([\s\S]*?)<\/h1>/)[1]);
+					}else{
+						setTimeout(function(){
+							obj.html(data.match(/<body.*?>([\s\S]*?)<\/body>/)[1]);
+							obj.find('a[ajax=true]').click(ajax_click);
+						},400);
+					}
+            		$("title").text(data.match(/<title>([\s\S]*?)<\/title>/)[1]);
             		
 				},
 				error:function(){}

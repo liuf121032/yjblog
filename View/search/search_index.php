@@ -84,12 +84,12 @@
 						<a href="javascript:;" class="content-bottom" target="_blank">- 赞 {$v.goods}</a>
 						<a href="javascript:;" class="content-bottom" target="_blank">- 踩 {$v.nos}</a>
 						<a href="javascript:;" class="content-bottom" target="_blank">- 浏览 {$v.views}</a>
-						<a href="javascript:;" class="content-bottom" target="_blank">- 帖子 {$v.views}</a>
+						<a href="javascript:;" class="content-bottom" target="_blank">- 帖子 {$v.posts}</a>
 						{if $v['img_count']}
-						<a href="javascript:;" class="content-bottom" target="_blank">- 图片 {$v.views}</a>
+						<a href="javascript:;" class="content-bottom" target="_blank">- 图片 {$v.img_count}</a>
 						{/if}
 						{if $v['files']}
-						<a href="javascript:;" class="content-bottom" target="_blank">- 帖子 {$v.files}</a>
+						<a href="javascript:;" class="content-bottom" target="_blank">- 附件 {$v.files}</a>
 						{/if}
 
 					</div>

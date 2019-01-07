@@ -233,7 +233,7 @@ body.post-type-archive-store #main-wrap{background: #f1f1f1;}
 .user-msg p{margin:0 0 10px;}
 .user-msg p.pm-date{margin-bottom: 0;font-size: 12px;}
 .user-msg .message-content{background: #f8f8f8;padding: 12px 10px;color: #39495a;line-height: 150%;}
-.user-msg .message-content p{padding:5px 10px !important;background:transparent !important;}
+.user-msg .message-content p{padding:0;margin:0;font-size: 12px;color: #969696;background:transparent !important;}
 .message-content img.avatar{margin-right: 5px;}
 .user-msg a.info{font-style: italic;color: #bbb;font-size: 12px;margin-bottom: 0;}
 .user-msg li{padding: 0;margin-bottom: 10px;line-height: 32px;border-bottom: 1px solid #eee;color: #888;font-size: 13px;}
@@ -644,7 +644,8 @@ body.author .dashboard .bd{
   -moz-osx-font-smoothing: grayscale;
 }
 .dashboard .bd a{
-  color: #00c8c9;
+
+  color: #8b8b8b;
   outline: none;
   cursor: pointer;
   -webkit-transition: all 0.3s ease-out;
@@ -703,9 +704,9 @@ body.author .dashboard .bd{
 .dashboard .primary .aside .menus ul li a:hover {color: #999;background: #f5f5f5;}
 .dashboard .primary .aside .menus ul li:last-child a{border-bottom:0;}
 .dashboard .primary .aside .menus ul li.active a {
-  color: #00c8c9;
+  color: #09c;
   background: #fff;
-  border-left: 3px solid #00c8c9;
+  border-left: 3px solid #09c;
   margin-left: -1px;
 }
 .dashboard .primary .aside .menus ul li a i {margin-right: 8px;}
@@ -832,6 +833,7 @@ body.author .dashboard .bd{
 }
 .dashboard .primary .area .summary .box ul li {
   color: #999;
+  font-size: 14px;
 }
 .dashboard .primary .area .fast-navigation {
   margin-top: 20px;

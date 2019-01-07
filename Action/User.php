@@ -41,9 +41,6 @@ class User extends HYBBS {
 
         header("location: ". HYBBS_URLA('thread',$data['tid']) );
         exit;
-
-
-
     }
     public function Edit(){
         //{hook a_user_edit_1}
@@ -204,6 +201,8 @@ class User extends HYBBS {
         if(IS_GET){
             //{hook a_user_login_2}
             $re_url = X("server.HTTP_REFERER");
+            if($re_url=='')
+                $re_url=WWW;
             if(strpos($re_url,WWW)!= -1 && strpos($re_url,'user')===false)
                 cookie('re_url',$re_url);
             
@@ -252,6 +251,7 @@ class User extends HYBBS {
                             'ctime'=>NOW_TIME,
                             'threads'=>S("Thread")->count(['uid'=>$data['uid']]),
                             'posts'=>S("Post")->count(['uid'=>$data['uid']]),
+                            'post_ps'=>S("Post_post")->count(['uid'=>$data['uid']]),
                             'follow'=>$count1,
                             'fans'=>$count2,
                         
@@ -261,13 +261,13 @@ class User extends HYBBS {
                     }
                    
                     //{hook a_user_login_53}
-
-
                     //在线用户结束
                     cookie('HYBBS_HEX',$UserLib->set_cookie($data));
                     $this->init_user();
                     //{hook a_user_login_54}
                     $re_url = cookie('re_url');
+                    if($re_url=='')
+                        $re_url='';
                     cookie('re_url',null);
                     return $this->message("登录成功 !",true,$re_url);
                 }else{
@@ -290,7 +290,8 @@ class User extends HYBBS {
         if(IS_GET){
             //{hook a_user_add_2}
             $re_url = X("server.HTTP_REFERER");
-            
+            if($re_url=='')
+                $re_url=WWW;
             if(strpos($re_url,WWW)!= -1 && strpos($re_url,'user')===false)
                 cookie('re_url',$re_url);
             $this->display('user_add');
@@ -338,6 +339,8 @@ class User extends HYBBS {
             $this->_count['day_user']++;
             $this->CacheObj->bbs_count = $this->_count;
             $re_url = cookie('re_url');
+            if($re_url=='')
+                $re_url='';
             cookie('re_url',null);
 
             return $this->message("账号注册成功",true,$re_url);

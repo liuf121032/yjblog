@@ -1,10 +1,14 @@
 <?php
 namespace HY\Lib;
+/**
+ * Hook Hook插件机制 Re插件机制
+*/
 class hook {
     static public $file = array();
     static public $include_file =array();
     static public $re_php = array();
     static public $i=0;
+    static public $file_type = '';
     static public function init_file(){
         
         self::tree(PLUGIN_PATH);
@@ -30,28 +34,55 @@ class hook {
     static public function init_re(){
 
     }
+    /*
+    re机制处理
+    $code代码内容
+
+     */
     static public function re($code,$file_path){ // code
-        
+        //echo $file_path;
         $key = self::str_replace_path($file_path);
         //echo $key."\r\n";
-        //var_dump(self::$re_php);
+        //print_r(self::$re_php);
+        
         if(empty(self::$file))
             self::init_file();
         foreach(self::$re_php as $v){
 
-            //var_dump($v);
-            if(isset($v[$key])){
-                
-
+            if(isset($v[$key])){//唯一针对
                 foreach ($v[$key] as $key1 => $value) {
                     
                     //var_dump($key1,$value);
                     if(is_file(PATH . $key1) && is_file(PATH . $value)){
                         $code = str_replace(
                             file_get_contents(PATH . $key1),
-                            file_get_contents(PATH . $value),
+                            self::set_plugin_name(PATH . $value).file_get_contents(PATH . $value).self::set_plugin_name(null),
                             $code
                         );
+
+                    }
+                }
+            }else{
+
+                foreach ($v as $aa => $vv) { //筛选 任一匹配
+                    if(strpos($aa,'*') !== false){ //伪正则匹配
+                        
+                        $aa = str_replace(['.','*','/'],['\.','.*','\/'],$aa);
+                        if(preg_match('/'.$aa.'/s',$key) > 0 ){
+                            //var_dump($aa,$key,$vv);
+                            foreach ($vv as $key1 => $value) {
+
+                                if(is_file(PATH . $key1) && is_file(PATH . $value)){
+                                    $code = str_replace(
+                                        file_get_contents(PATH . $key1),
+                                        self::set_plugin_name(PATH . $value).file_get_contents(PATH . $value).self::set_plugin_name(null),
+                                        $code
+                                    );
+
+                                }
+                            }
+                        }
+                        
 
                     }
                 }
@@ -60,9 +91,34 @@ class hook {
             
 
         }
-        return $code;
+        return $code;       
+    }
+    static public function set_plugin_name($file_path){
+        if($file_path === null){
+            if(!isset($GLOBALS['PREV_RUN_PLUGIN_INFO']))
+                $GLOBALS['PREV_RUN_PLUGIN_INFO']='';
+            $info = $GLOBALS['PREV_RUN_PLUGIN_INFO'];
+            if(self::$file_type=='Tpl'){
+                return "\r\n<?php //Hook ##END##{$info}## ?>\r\n";
+            }elseif(self::$file_type=='Action' || self::$file_type=='Model'){
+                return "\r\n//Hook ##END##{$info}##\r\n";
+            }
+        }
+        if(empty($file_path)) return false;
 
-            
+        $plugin_name = str_replace(PLUGIN_PATH,'',$file_path);
+        $pos = strpos_array($plugin_name,['/','\\']);
+        $dir_name = substr($plugin_name, 0, $pos);
+        $plugin_name = get_plugin_conf_v($dir_name,'name');
+        
+        $info = serialize(['plugin_name'=>$plugin_name,'dir_name'=>$dir_name,'path'=>$file_path]);
+        $GLOBALS['PREV_RUN_PLUGIN_INFO']=$info;
+        if(self::$file_type=='Tpl'){
+            return "\r\n<?php //Hook ##START##{$info}## ?>\r\n";
+        }elseif(self::$file_type=='Action' || self::$file_type=='Model'){
+            return "\r\n//Hook ##START##{$info}##\r\n";
+        }
+        //echo self::$file_type.'<br>';
     }
     static public function encode($code){ //code contents
         //echo $code;
@@ -80,7 +136,7 @@ class hook {
         $content='';
         if(isset(self::$file[$tag])){
             foreach (self::$file[$tag] as $v) {
-                $content.=file_get_contents($v);
+                $content.=self::set_plugin_name($v).file_get_contents($v).self::set_plugin_name(null);
             }
         }
         $content = preg_replace_callback('/\/\/{hook (.+?)}/is','self::parseTag',$content);
@@ -95,7 +151,7 @@ class hook {
         file_put_contents($path,$contents);
     }
 
-    //扫描插件hook文件 
+    //扫描插件hook文件 以及处理re.php
     //$directory 扫描目录
     //$vi_on 是否检测开启
     static public function tree($directory,$vi_on=false){

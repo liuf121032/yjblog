@@ -4,20 +4,20 @@ function A($name){
     $obj = new $class;
     return $obj;
 }
-function X($name){
+function X($name,$default = ''){
     $data = explode(".",$name);
     if(count($data) == 2){
         $v = $data[1];
         if($data[0]=='get'){
-            return isset($_GET[$v])?$_GET[$v]:'';
+            return isset($_GET[$v])?$_GET[$v]:$default;
         }elseif($data['0']=='post'){
-            return isset($_POST[$v])?$_POST[$v]:'';;
+            return isset($_POST[$v])?$_POST[$v]:$default;
         }elseif($data['0']=='session'){
-            return isset($_SESSION[$v])?$_SESSION[$v]:'';;
+            return isset($_SESSION[$v])?$_SESSION[$v]:$default;
         }elseif($data['0']=='cookie'){
-            return isset($_COOKIE[$v])?$_COOKIE[$v]:'';;
+            return isset($_COOKIE[$v])?$_COOKIE[$v]:$default;
         }elseif($data['0']=='server'){
-            return isset($_SERVER[$v])?$_SERVER[$v]:'';;
+            return isset($_SERVER[$v])?$_SERVER[$v]:$default;
         }
     }
     return '';
@@ -203,10 +203,10 @@ function URL($action,$method='',$age=[],$ext=''){ //age 参数 exp分隔符
 
     return $url . (empty($ext)?EXT:$ext);
 }
-function E($str,$save_log=true){
+function E($QQ,$save_log=true){
     // 如果你看到此错误,请不要详细查看此处, 此处无错误,请看上面的"错误信息"
     $GLOBALS['Exception_save_log']=$save_log;
-    throw new \Exception($str,4174201);
+    throw new \Exception($QQ,4174201);
 }
 //判断你手机访问 
 function hy_is_mobile(){
@@ -286,4 +286,40 @@ function vendor($path){
     $vendor_arr = C('vendor');
     array_push($vendor_arr, $path);
     C('vendor',$vendor_arr);
+}
+//获取IP
+function ip(){
+    if(!C('CDN_IP')){
+        return $_SERVER['REMOTE_ADDR'];
+    }else{
+        foreach (['HTTP_CDN_SRC_IP','HTTP_CLIENT_IP','HTTP_X_FORWARDED_FOR'] as $v) {
+            if(isset($_SERVER[$v])) return $_SERVER[$v];
+        }
+        return $_SERVER['REMOTE_ADDR'];
+    }
+}
+function set_now_run_plugin($info){
+    $GLOBALS['NOW_RUN_PLUGIN'] = $info;
+}
+function get_now_run_plugin(){
+    if(!isset($GLOBALS['NOW_RUN_PLUGIN']))
+        $GLOBALS['NOW_RUN_PLUGIN']=[];
+    if(empty($GLOBALS['NOW_RUN_PLUGIN'])) return false;
+    return $GLOBALS['NOW_RUN_PLUGIN'];
+}
+function strpos_array($haystack, $needles) {
+    if ( is_array($needles) ) {
+        foreach ($needles as $str) {
+            if ( is_array($str) ) {
+                $pos = strpos_array($haystack, $str);
+            } else {
+                $pos = strpos($haystack, $str);
+            }
+            if ($pos !== FALSE) {
+                return $pos;
+            }
+        }
+    } else {
+        return strpos($haystack, $needles);
+    }
 }

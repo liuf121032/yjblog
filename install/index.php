@@ -630,7 +630,7 @@ line-height:150%"></p>
 								href = href.replace('index.php','');
 					 			if(href.substr(href.length-1,1) !='/')
 					 				href+='/';
-					 			href+='../?s=Inst';
+					 			href+='../index.php?s=Inst';
 					 			app_text('<i class="fa fa-check"></i> 测试连接数据库成功;')
 					 			app_text('<i class="fa fa-check"></i> 正在安装,请勿离开...(一般只需要5秒钟左右);')
 								$.ajax({

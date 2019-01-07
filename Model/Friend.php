@@ -69,8 +69,11 @@ class Friend extends Model {
 		if($this->has(array('AND'=>array('uid1'=>$uid1,'uid2'=>$uid2)))){
 			//{hook m_friend_update_int_2}
 			if($type==="+")
-				return $this->update(["c[{$type}]"=>$size,'atime'=>NOW_TIME],['AND'=>['uid1'=>$uid1,'uid2'=>$uid2]]);
-			return $this->update(["c[{$type}]"=>$size],['AND'=>['uid1'=>$uid1,'uid2'=>$uid2]]);
+				$this->update(["c[{$type}]"=>$size,'atime'=>NOW_TIME],['AND'=>['uid1'=>$uid1,'uid2'=>$uid2]]);
+			else
+				$this->update(["c[{$type}]"=>$size],['AND'=>['uid1'=>$uid1,'uid2'=>$uid2]]);
+			$this->get_c($uid1,$uid2);
+			 
 		}
 		//{hook m_friend_update_int_3}
 		$this->insert(['uid1'=>$uid1,'uid2'=>$uid2,'c'=>1,'atime'=>NOW_TIME,'state'=>0]);
@@ -79,10 +82,17 @@ class Friend extends Model {
 	}
 	public function get_c($uid1,$uid2){
 		//{hook m_friend_get_c_1}
-		if(!$this->has(array('AND'=>array('uid1'=>$uid1,'uid2'=>$uid2))))
+		if(!$this->has(['AND'=>['uid1'=>$uid1,'uid2'=>$uid2]]))
 			return 0;
 		//{hook m_friend_get_c_2}
-		return $this->find('c',array('AND'=>array('uid1'=>$uid1,'uid2'=>$uid2)));
+		$c= $this->find('c',['AND'=>['uid1'=>$uid1,'uid2'=>$uid2]]);
+		if($c<0)
+			$this->clear_c($uid1,$uid2);
+		
+		return ($c < 0 )?0:$c;
+	}
+	public function clear_c($uid1,$uid2){
+		$this->update(['c'=>0],['AND'=>['uid1'=>$uid1,'uid2'=>$uid2]]);
 	}
 	//{hook m_friend_fun}
 }

@@ -23,6 +23,10 @@ class Thread extends Model {
         //{hook m_thread_read_1}
         return $this->get_row($tid);
     }
+    //判断主题是否还存在
+    public function is_tid($tid){
+        return $this->has(['tid'=>$tid]);
+    }
     /**
      * 获取主题标题
      * @access public

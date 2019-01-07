@@ -15,7 +15,8 @@ class My extends HYBBS {
             'mess'=>'',
             'op'=>'',
             'file'=>'',
-            'log'=>''
+            'log'=>'',
+            //{hook a_my_init_arr}
         );
         //{hook a_my_init_1}
 
@@ -133,16 +134,16 @@ class My extends HYBBS {
             ]);
             //{hook a_my_empty_100}
             $Thread = M("Thread");
-            $tmp_title = array();
+            $tmp_thread_data= array();
             foreach ($post_data as &$v) {
-                if(!isset($tmp_title[$v['tid']]))
-                    $tmp_title[$v['tid']] = $Thread->get_title($v['tid']);
-                $v['atime']=$v['atime'];
+                if(!isset($tmp_thread_data[$v['tid']]))
+                    $tmp_thread_data[$v['tid']] = $Thread->get_row($v['tid'],['uid','title']);
+                //$v['atime']=$v['atime'];
                 $v['content'] = mb_substr(strip_tags($v['content']), 0,50);
-                $v['title'] = $tmp_title[$v['tid']];
-
-
+                $v['title'] = $tmp_thread_data[$v['tid']]['title'];
+                $v['uid'] = $tmp_thread_data[$v['tid']]['uid'];
             }
+            $User->auto_add_user($post_data);
             
             //{hook a_my_empty_10}
 

@@ -8,6 +8,11 @@ class Line{
         }
         else{
             $_GET['s'] = $_SERVER["QUERY_STRING"];
+            if(empty($_GET['s'])){
+                if(!isset($_SERVER["REQUEST_URI"]))
+                    $_SERVER['REQUEST_URI']='';
+                $_GET['s'] = $_SERVER['REQUEST_URI'];
+            }
             $url = ltrim($_GET['s'], C("url_explode"));
         }
         
@@ -31,8 +36,13 @@ class Line{
                 $class = '\\Action\\Index';
             }
         } else {
-            $url = explode(C("url_suffix"),$url)[0];
-            $info = str_replace(C("url_suffix"), '', $url);
+            $url_suffix = C("url_suffix");
+            $info = $url;
+            if(!empty($url_suffix)){
+                $url = explode($url_suffix,$url)[0];
+                $info = str_replace($url_suffix, '', $url);
+            }
+            
             if(strpos($info,'?') !== false){
                 $info = substr($info, 0,strpos($info,'?'));
             }
@@ -111,7 +121,7 @@ class Line{
             foreach((array)explode('?',$query_string) as $v){
                 foreach((array)explode('&',$v) as $vv){
                     $tmp = explode('=',$vv);
-                    if(count($tmp==2) && isset($tmp[0]) && isset($tmp[1])){
+                    if(count($tmp)==2 && isset($tmp[0]) && isset($tmp[1])){
                         if(!isset($_GET[$tmp[0]]))
                             $_GET[$tmp[0]]=$tmp[1];
                     }

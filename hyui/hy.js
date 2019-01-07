@@ -4,7 +4,7 @@
 	_this.pop = false;
 	_this.canvas = false;
 	$.hy.overflow_hide = function(){
-		$("body").attr('hide_size',parseInt($("body").attr('hide_size'))+1 );
+		
 		var scrollTop = $("body").scrollTop();
 		$("body").css({
 		    'overflow':'hidden',
@@ -16,9 +16,9 @@
 		
 	}
 	$.hy.overflow_show = function(){
-		var i = parseInt($("body").attr('hide_size'))-1;
-		$("body").attr('hide_size', (i<0)?0:i );
-		if(parseInt($("body").attr('hide_size')) < 1){
+		var i = $('.hy-iframe').length - 1;
+		
+		if(i< 1){
 			var sc = $("body").css('top');
 			$("body").css({
 			    'overflow':'auto',

@@ -80,6 +80,7 @@ return array(
 	'修改'=>'Edit',
 	'修改密码'=>'Edit Password',
 	'新密码'=>'New Password',
+	'旧密码'=>'Old Password',
 	'确认新密码'=>'Confirm New Password',
 	'提交修改密码'=>'Post New Password',
 	'你注册账号所填的邮箱'=>'E-mail For your Account',

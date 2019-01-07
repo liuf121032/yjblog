@@ -1,7 +1,6 @@
 {include header}
 <div class="wrapper">
     {include header_menu}
-
     {include left_menu}
     <div class="main-container">
         <div class="padding-md">
@@ -153,26 +152,28 @@
                                 {/if}
                             {/if}
                             {if !$tmp}
-                            <label class="mui-switch-box" style="margin-right: 10px;">
-                                <input style="margin-top: 0;" onclick="update(this)" data-name="{$v}" data-state="{if isset($conf[$key]['on'])}on{else}off{/if}" class="mui-switch" type="checkbox" {if isset($conf[$key]['on'])}checked{/if}>
-                            </label>
+                            
+                            <input class='tgl tgl-skewed' id='cb{$key}' type='checkbox' onclick="update(this)" data-name="{$v}" data-state="{if isset($conf[$key]['on'])}on{else}off{/if}" {if isset($conf[$key]['on'])}checked{/if}>
+                            <label class='tgl-btn' data-tg-off='已关闭' data-tg-on='开启中' for='cb{$key}'></label>
+
                             {/if}
                             
 
 
                             {if is_plugin_function($v)}
     						{if !get_plugin_install_state($v)}
-                            <a class="btn btn-xs btn-success" onclick="$('#gn1').val('install');$('#pluginname1').val('{$v}');$('#md1').load('{php HYBBS_URL('admin','code',['name'=>$v,'gn'=>'install']);}');$('.modal-p1').text('<?php echo $conf[$key]['name']; ?>')" data-toggle="modal" data-target="#normalModal1">安装</a>
+                            <a class="btn btn-sm btn-success" onclick="$('#gn1').val('install');$('#pluginname1').val('{$v}');$('#md1').load('{php HYBBS_URL('admin','code',['name'=>$v,'gn'=>'install']);}');$('.modal-p1').text('<?php echo $conf[$key]['name']; ?>')" data-toggle="modal" data-target="#normalModal1">安装</a>
                             
                             {else}
-                            <a class="btn btn-xs btn-danger" onclick="$('#gn1').val('uninstall');$('#pluginname1').val('{$v}');$('#md1').load('{php HYBBS_URL('admin','code',['name'=>$v,'gn'=>'uninstall']);}');$('.modal-p1').text('<?php echo $conf[$key]['name']; ?>')" data-toggle="modal" data-target="#normalModal1">卸载</a>
+                            <a class="btn btn-sm btn-danger" onclick="$('#gn1').val('uninstall');$('#pluginname1').val('{$v}');$('#md1').load('{php HYBBS_URL('admin','code',['name'=>$v,'gn'=>'uninstall']);}');$('.modal-p1').text('<?php echo $conf[$key]['name']; ?>')" data-toggle="modal" data-target="#normalModal1">卸载</a>
                             {/if}
 
                             {/if}
                             {if get_plugin_inc($v)}
-                            <a class="btn btn-xs btn-warning" onclick="$('#gn').val('op');$('#pluginname').val('{$v}');$('#md').load('{php HYBBS_URL('admin','code',['name'=>$v,'gn'=>'op']);}');$('.modal-p').text('<?php echo $conf[$key]['name']; ?>')" data-toggle="modal" data-target="#normalModal">配置</a>
+                            <a class="btn btn-sm btn-warning" onclick="$('#gn').val('op');$('#pluginname').val('{$v}');$('#md').load('{php HYBBS_URL('admin','code',['name'=>$v,'gn'=>'op']);}');$('.modal-p').text('<?php echo $conf[$key]['name']; ?>')" data-toggle="modal" data-target="#normalModal">配置</a>
                             {/if}
-                            <a class="btn btn-xs btn-danger" onclick="$('#gn1').val('del');$('#pluginname1').val('{$v}');$('#md1').html('<h1>删除插件目录文件,而且不执行卸载函数</h1>');$('.modal-p1').text('<?php echo $conf[$key]['name']; ?>')" data-toggle="modal" data-target="#normalModal1">删除插件</a>
+
+                            <button class="btn btn-sm btn-danger" onclick="$('#gn1').val('del');$('#pluginname1').val('{$v}');$('#md1').html('<h1>删除插件目录文件,而且不执行卸载函数</h1>');$('.modal-p1').text('<?php echo $conf[$key]['name']; ?>')" data-toggle="modal" data-target="#normalModal1" {if is_plugin_on($v) || (is_plugin_function($v) && get_plugin_install_state($v))}title="需要关闭，卸载插件后 才能删除!" disabled{/if}>删除插件</button>
                             
     					</div>
 
@@ -256,8 +257,6 @@
                     <textarea class="form-control" name="mess" placeholder="在这里描述你的插件" rows="3" ></textarea>
                 </div><!-- /form-group -->
 
-
-
             </textarea>
 
             <form method="post" >
@@ -282,8 +281,6 @@
 			  	</div>
 			</div>
             </form>
-
-
 
             <script>
                 function update(obj){
@@ -313,9 +310,43 @@
 
 
         </div>
-    </div><!-- ENd box  -->
+    
 
-</div>
-</div>
 
+
+<style type="text/css">
+    #md:after{
+        display: table;
+        content: " ";
+        clear: both;
+    }
+</style>
+  <!-- <h2>Toggle it!</h2>
+  <ul class='tg-list'>
+  <li class='tg-list-item'>
+    <h4>Light</h4>
+    <input class='tgl tgl-light' id='cb1' type='checkbox'>
+    <label class='tgl-btn' for='cb1'></label>
+  </li>
+  <li class='tg-list-item'>
+    <h4>iOS 7</h4>
+    <input class='tgl tgl-ios' id='cb2' type='checkbox'>
+    <label class='tgl-btn' for='cb2'></label>
+  </li>
+  <li class='tg-list-item'>
+    <h4>Skewed</h4>
+    <input class='tgl tgl-skewed' id='cb3' type='checkbox'>
+    <label class='tgl-btn' data-tg-off='OFF' data-tg-on='ON' for='cb3'></label>
+  </li>
+  <li class='tg-list-item'>
+    <h4>Flat</h4>
+    <input class='tgl tgl-flat' id='cb4' type='checkbox'>
+    <label class='tgl-btn' for='cb4'></label>
+  </li>
+  <li class='tg-list-item'>
+    <h4>Flip</h4>
+    <input class='tgl tgl-flip' id='cb5' type='checkbox'>
+    <label class='tgl-btn' data-tg-off='Nope' data-tg-on='Yeah!' for='cb5'></label>
+  </li>
+  </ul> -->
 {include footer}

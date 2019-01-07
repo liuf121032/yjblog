@@ -1,22 +1,16 @@
 <?php
-
 namespace Lib;
-
-
-
 class Zip {
 	private $ctrl_dir	= array();
 	private $datasec	= array();
-	//public $fileList 	= array();
-	public $files		= array(); // 用来返回文件名，SAE 需要。
-
-
     //压缩文件
 	public function zip($dir, $saveName) {
-		if(@!function_exists('gzcompress')){ E('gzcompress does not exits.'); }
-		if(!is_dir($dir)) {
-			E($dir.'does not exits.');
-		}
+		if(!function_exists('gzcompress'))
+			E('gzcompress 未定义，PHP扩展未开启'); 
+		
+		if(!is_dir($dir)) 
+			E($dir . '目录未创建');
+		
 		$filelist = $this->visit_file($dir);
 		if(count($filelist) == 0){ return; }
 
@@ -50,7 +44,6 @@ class Zip {
 		$filecount = 0;
 		$dircount  = 0;
 		$failfiles = array();
-		//set_time_limit(0);
 
 		for($i=0; $i<count($array); $i++) {
 		 	if($array[$i]['folder'] == 0){
@@ -192,7 +185,6 @@ class Zip {
 		{
 			$byte  = fread($zip, 1);
 
-			// fixed 64 bit bug, by axiuno@gmail.com
 			// 64 bit
 			if(PHP_INT_SIZE === 8) {
 				$bytes = ($bytes << 8) | Ord($byte);
@@ -211,13 +203,10 @@ class Zip {
 				$pos++;
 				if($bytes == 0x504B0506) break;
 			}
-			//printf("bytes: %016x, %d\r\n", $bytes, PHP_INT_SIZE);
 		}
         
        $data = unpack('vdisk/vdisk_start/vdisk_entries/ventries/Vsize/Voffset/vcomment_size', fread($zip, 18));
           
-
-
 		$centd['comment']	  = ($data['comment_size'] != 0) ? fread($zip, $data['comment_size']) : '';
 		$centd['entries']	  = $data['entries'];
 		$centd['disk_entries'] = $data['disk_entries'];
@@ -286,7 +275,7 @@ class Zip {
 
 		$header['stored_filename'] = $header['filename'];
 		$header['status']		  = "ok";
-		$header['external']		  = 0;	// 重要修正! 无法解压文件 by xiuno
+		$header['external']		  = 0;
 		if(substr($header['filename'], -1) == '/'){ $header['external'] = 0x41FF0010; }
 		return $header;
 	}
@@ -309,7 +298,8 @@ class Zip {
 		{
 			if($header['compression'] == 0)
 			{
-				$fp = fopen($to.$header['filename'], 'wb');
+
+				$fp = fopen($to.iconv("UTF-8", "GBK", $header['filename']), 'wb');
 				if(!$fp){ return(-1); }
 				$size = $header['compressed_size'];
 
@@ -323,11 +313,11 @@ class Zip {
 				}
 				fclose($fp);
 				// 改变文件时间
-				touch($to.$header['filename'], $header['mtime']);
+				touch($to.iconv("UTF-8", "GBK", $header['filename']), $header['mtime']);
 
 			}else{
 
-				$fp = fopen($to.$header['filename'].'.gz', 'wb');
+				$fp = fopen($to.iconv("UTF-8", "GBK", $header['filename']).'.gz', 'wb');
 				if(!$fp){ return(-1); }
 				$binary_data = pack('va1a1Va1a1', 0x8b1f, chr($header['compression']), chr(0x00), time(), chr(0x00), chr(3));
 
@@ -347,37 +337,18 @@ class Zip {
 				fwrite($fp, $binary_data, 8);
 				fclose($fp);
 
-				// 此处存在兼容性问题，在php5.3 下有问题，由 xiuno 修正。
-				$gzfile = $to.$header['filename'].'.gz';
+				
+				$gzfile = $to.iconv("UTF-8", "GBK", $header['filename']).'.gz';
 				$s = file_get_contents($gzfile);
 				$unzipdata = $this->compatible_gzinflate($s);
-				file_put_contents($to.$header['filename'], $unzipdata);
-
-				/* old code
-				$gzp = gzopen($to.$header['filename'].'.gz', 'rb');// or die("gzopen failed: $to$header[filename].gz");
-				if(!$gzp){ return(-2); }
-				$fp = @fopen($to.$header['filename'], 'wb');
-				if(!$fp){ return(-1); }
-				$size = $header['size'];
-				echo $size;exit;
-				while($size != 0)
-				{
-					$read_size   = ($size < 2048 ? $size : 2048);
-					$buffer	  = gzread($gzp, $read_size);
-					$binary_data = pack('a'.$read_size, $buffer);
-					@fwrite($fp, $binary_data, $read_size);
-					$size	   -= $read_size;
-				}
-				fclose($fp); gzclose($gzp);
-				*/
-
-				@unlink($to.$header['filename'].'.gz');
+				file_put_contents($to.iconv("UTF-8", "GBK", $header['filename']), $unzipdata);
+				@unlink($to.iconv("UTF-8", "GBK", $header['filename']).'.gz');
 			}
 		}
 		return true;
 	}
 
-	// 参考 wordpress 和 http://bbs.xiuno.com/thread-index-fid-27-tid-3483.htm
+	
 	private function compatible_gzinflate($gzData) {
 
 		// gzencode 函数
@@ -423,6 +394,8 @@ class Zip {
 		if(!$zip){ return(-1); }
 
 		$cdir	  = $this->read_central_dir($zip, $zipfile);
+
+
 		$pos_entry = $cdir['offset'];
 
 		if(!is_array($index)){ $index = array($index); }
@@ -444,11 +417,8 @@ class Zip {
 			fseek($zip, $header['offset']);
 
 			if(in_array("-1", $index) || in_array($i, $index))
-			{
-				//echo "$header[filename] $i ".print_r($index, 1)."\r\n\r\n";
 				$stat[$header['filename']] = $this->extrace_file($header, $to, $zip);
-				$this->files[] = $header['filename'];
-			}
+			
 		}
 
 		fclose($zip);

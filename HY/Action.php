@@ -1,6 +1,8 @@
 <?php
 namespace HY;
-
+/**
+ * Action.php Action
+ */
 abstract class Action
 {
     protected $var = array();
@@ -8,7 +10,7 @@ abstract class Action
     public $view = '';
     //模板分组
     //编译获取HTML
-    protected function GetHtml($file_name){
+    protected function GetHtml($file_name,$del_cache = false){
         $View = $this->view ? $this->view . '/' : '';
         //缓存路劲
         $view_file_md5 = md5($View . $file_name);
@@ -45,11 +47,8 @@ abstract class Action
             }else{
                 $_LANG = $Lang->get_lang_tmpfile($view_file_md5. NOW_LANG);
             }
-            
-
         }
-        if (!is_file($tmp_path) || DEBUG || $lang_need_put) {
-            
+        if (!is_file($tmp_path) || DEBUG || $lang_need_put || $del_cache) {
             //写入缓存文件
             $tpl_path = VIEW_PATH . $View . $file_name; //模板文件路劲
             if(!empty($plugin_name) && !empty($plugin_view)){
@@ -81,6 +80,7 @@ abstract class Action
             
             $content = file_get_contents($tpl_path);
             Lib\hook::$include_file[]=$tpl_path;
+            Lib\hook::$file_type = 'Tpl';
 
             //获取 模板文件
             $this->Tpl = new \HY\Tpl();
@@ -109,8 +109,8 @@ abstract class Action
         return $content;
     }
     
-    protected function display($file_name, $html = false){
-        $content = $this->GetHtml($file_name);
+    protected function display($file_name, $del_cache = false){
+        $content = $this->GetHtml($file_name,$del_cache);
         echo $content;
     }
     protected function v($name, $value = ''){

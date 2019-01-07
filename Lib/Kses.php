@@ -51,12 +51,12 @@ C(array(
 			'datetime' => true,
 		),
 		'dd' => array(),
-		'div' => array(
+		/*'div' => array(
 			'align' => true,
 			'dir' => true,
 			'lang' => true,
 			'xml:lang' => true,
-		),
+		),*/
 		'dl' => array(),
 		'dt' => array(),
 		'em' => array(),

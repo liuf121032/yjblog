@@ -8,6 +8,7 @@
             <li>文件加载</li>
             <li>类库加载</li>
             <li>COOKIE</li>
+            <li>_GET</li>
         </ul>
     </div>
     <div id="HY-ID0" style="height: 198px;overflow-y: auto;">
@@ -62,6 +63,22 @@
             
             <?php foreach ($_COOKIE as $k => $v): ?>
                 <li><?php echo $k; ?> : <?php echo $v; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+    <div id="HY-ID5" style="height: 198px;overflow-y: auto;display:none;">
+        <ul class="HY">
+        <?php if(!isset($_GET))
+                $_GET = array();
+            else{
+                if(empty($_GET))  
+                    $_GET = array();
+                }
+            ?>
+        <li style="border-top: solid 1px #D2D2D2;">GET个数 (<?php echo count($_GET); ?>)</li>
+            
+            <?php foreach ($_GET as $k_GET => $v_GET): ?>
+                <li><?php echo $k_GET; ?>：<?php echo (is_array($v_GET)?'Json格式化：'.json_encode($v_GET):$v_GET); ?></li>
             <?php endforeach; ?>
         </ul>
     </div>

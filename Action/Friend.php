@@ -7,16 +7,16 @@ class Friend extends HYBBS {
 	public function friend_state(){
         //{hook a_friend_friend_state_1}
         if(!IS_LOGIN)
-            return $this->json(array('error'=>false,'info'=>'请登录后操作!'));
+            $this->json(['error'=>false,'info'=>'请登录后操作!']);
         //{hook a_friend_friend_state_2}
         $uid = intval(X("post.uid"));
         if(NOW_UID == $uid){
-            return $this->json(array('error'=>false,'info'=>'无法添加自己!'));
+            $this->json(['error'=>false,'info'=>'无法添加自己!']);
         }
         //{hook a_friend_friend_state_3}
         $User = M("User");
         if(!$User->is_uid($uid))
-            return $this->json(array('error'=>false,'info'=>'你玩的挺嗨的!'));
+            $this->json(['error'=>false,'info'=>'你玩的挺嗨的!']);
         $Friend = M("Friend");
         //{hook a_friend_friend_state_4}
         $state = $Friend->get_state(NOW_UID,$uid);
@@ -37,7 +37,7 @@ class Friend extends HYBBS {
             $User->update(['follow'=>$count1],['uid'=>NOW_UID]);
             $User->update(['fans'  =>$count2],['uid'=>$uid]);
 
-            return $this->json(['error'=>true,'info'=>'添加成功!','id'=>1]);
+            $this->json(['error'=>true,'info'=>'添加成功!','id'=>1]);
         }
         elseif($state == 1 || $state == 2){ //删除好友
             //{hook a_friend_friend_state_8}
@@ -51,9 +51,9 @@ class Friend extends HYBBS {
             $User->update(['fans'  =>$count2],['uid'=>$uid]);
             //{hook a_friend_friend_state_10}
 
-            return $this->json(['error'=>true,'info'=>'删除成功!','id'=>0]);
+            $this->json(['error'=>true,'info'=>'删除成功!','id'=>0]);
         }
-        return $this->json(['error'=>false,'info'=>'没有返回值!']);
+        $this->json(['error'=>false,'info'=>'没有返回值!']);
         //{hook a_friend_friend_state_11}
 
     }
@@ -61,32 +61,32 @@ class Friend extends HYBBS {
     public function send_chat(){
         //{hook a_friend_send_chat_1}
         if(!IS_LOGIN)
-            return $this->json(array('error'=>false,'info'=>'你需要重新登录!'));
+            $this->json(['error'=>false,'info'=>'你需要重新登录!']);
         //{hook a_friend_send_chat_2}
         if(IS_POST){
             if($this->_user['chat_size'] >= $this->_usergroup[NOW_GID]['chat_size'])
-                return $this->json(array("error"=>false,'info'=>"你已经没有聊天记录储存空间,需要提升用户组或者到个人中心清空你的聊天记录!"));
+                $this->json(["error"=>false,'info'=>"你已经没有聊天记录储存空间,需要提升用户组或者到个人中心清空你的聊天记录!"]);
             //{hook a_friend_send_chat_3}
             //发送给ID
             $uid = intval(X("post.uid"));
-            $content = htmlspecialchars(strip_tags(X("post.content")));
+            $content = htmlspecialchars(X("post.content"));
             $content = str_replace('&nbsp;','',$content);
             $content = trim($content);
             if(empty($content))
-                return $this->json(['error'=>false,'info'=>'内容不能为空!']);
+                $this->json(['error'=>false,'info'=>'内容不能为空!']);
 
             //{hook a_friend_send_chat_4}
             //不能发送给自己
             if($uid == NOW_UID)
-                return $this->json(['error'=>false,'info'=>'你玩的挺嗨的!']);
+                $this->json(['error'=>false,'info'=>'你玩的挺嗨的!']);
             $User = M("User");
             //{hook a_friend_send_chat_5}
             if(!$User->is_uid($uid))
-                return $this->json(['error'=>false,'info'=>'该用户不存在!']);
+                $this->json(['error'=>false,'info'=>'该用户不存在!']);
             //{hook a_friend_send_chat_6}
             M("Chat")->send($uid,NOW_UID,$content);
             M("User")->update_int(NOW_UID,'chat_size','+',strlen($content));
-            return $this->json(['error'=>true,'info'=>'!']);
+            $this->json(['error'=>true,'info'=>'!']);
         }
         //{hook a_friend_send_chat_7}
     }
@@ -165,12 +165,14 @@ class Friend extends HYBBS {
             $Friend = M("Friend");
             //{hook a_friend_get_old_chat_4}
             $size = $size1 = $Friend->get_c($uid2,$uid1);
-
+            $history = false;
             //echo $size;
-            if(!$size)
+            if(!$size){
                 $size = 10;
+                $history = true; //获取历史记录
+            }
             //{hook a_friend_get_old_chat_5}
-            $data = array();
+            $data = [];
             if($size == 10){
                 //{hook a_friend_get_old_chat_6}
                 $data = $Chat->select('*',
@@ -207,10 +209,11 @@ class Friend extends HYBBS {
             }
             //{hook a_friend_get_old_chat_10}
 
+            //扣除未读消息
+            if(!$history)
+                $Friend->update_int($uid2,$uid1,'-',$size);
             
-
-            $Friend->update_int($uid2,$uid1,'-',$size);
-            if($size1 != 0){
+            if(!$history){
                 $Chat_count = M("Chat_count");
                 $Chat_count->update_int(NOW_UID,'-',$size1);
             }
@@ -245,6 +248,8 @@ class Friend extends HYBBS {
                 return $this->json(array('error'=>false,'info'=>array(),'atime'=>$c['atime'],'error_id'=>3));
             $Friend = S("Friend");
             $data = $Friend->select(['uid2','c'],['AND'=>['uid1'=>NOW_UID,'c[!]'=>0]]);
+            if(empty($data))
+                $Chat_count->update(['c'=>0],['uid'=>NOW_UID]);
             //{hook a_friend_pm6}
             $this->json(['error'=>true,'info'=>$data,'atime'=>$c['atime']]);
             //var_dump($c);

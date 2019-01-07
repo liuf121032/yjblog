@@ -1,182 +1,202 @@
 <?php $eidt_inc = get_plugin_inc('UMeditor');?>
 {if $data['isthread']}
 <?php $fid = $thread_data['fid']; ?>
-<div class="hy-forum-select">
-  <button onclick="hide_forum_select()" type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-  <h1>
-    <button onclick="select_forum(this)">选择</button>
-  </h1>
-  <div class="hy-forum-content">
-    <div>
-      <ul>
-        {foreach $forum as $key => $v}
-        {if $v['fid'] == -1}
-        <li data-id="{$v.id}">
-          <a href="javascript:;">
-            <img src="{#WWW}upload/forum{$key}.png" onerror="this.src='{#WWW}upload/de.png'" align="left" alt="">
-            {$v.name}
-          </a>
-        </li>
-        {/if}
-        {/foreach}
-      </ul>
-    </div>
-  </div>
-</div>
 <style type="text/css">
-.hy-forum-select{position:fixed;z-index:999;display:none;background-color:#fff;-webkit-background-clip:padding-box;background-clip:padding-box;border:1px solid #999;border:1px solid rgba(0,0,0,.2);border-radius:6px;outline:0;-webkit-box-shadow:0 3px 9px rgba(0,0,0,.5);box-shadow:0 3px 9px rgba(0,0,0,.5);overflow-x:hidden;overflow:hidden}
-.hy-forum-select .close{float:right;font-size:21px;font-weight:700;line-height:1;color:#000;text-shadow:0 1px 0 #fff;filter:alpha(opacity=20);opacity:.2;cursor:pointer;border:0;margin-right:10px;margin-top:10px;background:#FFF;outline:0}
-.hy-forum-select .close:focus,.hy-forum-select .close:hover{color:#000;text-decoration:none;cursor:pointer;filter:alpha(opacity=50);opacity:.5}
-.hy-forum-select h1{border-bottom:solid 1px #E81B1B;margin-bottom:0;padding:9px 12px;border-bottom:1px solid #e5e5e5;font-size:18px}
-.hy-forum-select h1 button{display:inline-block;line-height:normal;vertical-align:baseline;text-align:center;cursor:pointer;-webkit-user-drag:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;font-family:inherit;padding:3px 5px;border:solid transparent 2px;text-decoration:none;border-radius:4px;font-size:14px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;-webkit-transition:border-color .15s,background .15s;-o-transition:border-color .15s,background .15s;transition:border-color .15s,background .15s;-webkit-appearance:none;color:#fff;background-color:#337ab7;border-color:#2e6da4}
-.hy-forum-select h1 button:hover{color:#fff;background-color:#286090;border-color:#204d74}
-.hy-forum-content:after{content:".";display:block;height:0;clear:both;visibility:hidden}
-.hy-forum-content>div{float:left;width:166px;padding:10px}
-.hy-forum-select li,.hy-forum-select ul{margin:0;padding:0;list-style:none}
-.hy-forum-select li{border:solid 1px #CECECE;padding:4px 7px;letter-spacing:0;background:#000;background-image:linear-gradient(to top,#E6E6E6,#fff);margin-bottom:5px;cursor:pointer;border-radius:3px}
-.hy-forum-select li:hover{background-image:linear-gradient(to top,#fff,#E6E6E6)}
-.hy-forum-select li.a{background-color:#337ab7;border-color:#337ab7;background-image:none}
-.hy-forum-select li.a a{color:#FFF}
-.hy-forum-select li:nth-child(3n+0){margin-right:0}
-.hy-forum-select li a{vertical-align:middle;line-height:2.2}
-.hy-forum-select li img{width:32px;height:32px;vertical-align:middle;margin-right:10px}
-.hy-forum-select li:after,.hy-forum-select ul:after{content:".";display:block;height:0;clear:both;visibility:hidden}
-.hy-forum-select ul::-webkit-scrollbar{width:14px;height:14px}
-.hy-forum-select ul::-webkit-scrollbar-corner{background:0 0}
-.hy-forum-select ul::-webkit-scrollbar-thumb,.hy-forum-select ul::-webkit-scrollbar-track{border-radius:999px;border:5px solid transparent}
-.hy-forum-select ul::-webkit-scrollbar-thumb{min-height:20px;background-clip:content-box;box-shadow:0 0 0 5px rgba(185,185,185,.47) inset}
-.hy-back{
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 305;
-    background-color: rgba(109, 109, 109, 0.9);
-    opacity: 0;
-    -webkit-transition: opacity .15s linear;
-    -o-transition: opacity .15s linear;
-    transition: opacity .15s linear;
+.select-forum{
+  position: relative;
+    width: 150px;
 }
-.in{
-  opacity: 0.9;
+.select-forum-input{
+  border: 1px solid #D4D4D4;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
 }
+.select-forum-ul{
+  border: 1px solid #D4D4D4;
+  top: 40px;
+  background: #FFF;
+  border-top: none;
+  z-index: 1;
+  position: absolute;
+  border-radius: 0px 0px 4px 4px;
+  display: none;
+      z-index: 1234;
+      width: 350px;
+          border: 1px solid rgba(0,0,0,.2);
+    border-radius: 6px;
+    -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+.select-forum-ul ul,.select-forum-ul li{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.select-forum-ul li{
+      height: 40px;
+  
+  -webkit-transition: height .5s;
+  transition: height .5s;
+  overflow: hidden;
+}
+.select-forum-ul li:hover{
+  /* max-height:100%;
+  height: auto; */
+}
+.select-forum-ul li li{
+  padding-left: 3em;
+}
+
+.select-forum-ul li span{
+          display: block;
+    /* background-image: linear-gradient(to top,#F1F1F1,#fff); */
+    border-top: solid 1px #E9E9E9;
+    padding: 6px 10px;
+    font-size: 14px;
+    margin: 0 -2px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #09c;
+}
+.select-forum-ul li span img{
+          width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 10px;
+
+}
+.select-forum-ul li .icon{
+         width: 33px;
+    height: 33px;
+    float: right;
+    margin-top: -2px;
+    margin-right: -5px;
+        fill: #6B6B6B;
+        transition: All 0.4s ease-in-out;
+    -webkit-transition: All 0.4s ease-in-out;
+    -moz-transition: All 0.4s ease-in-out;
+    -o-transition: All 0.4s ease-in-out;
+    
+    transform: rotate(360deg);
+}
+.select-forum-ul li i{
+      height: 40px;
+    position: absolute;
+    width: 100%;
+    cursor: pointer;
+        z-index: 1;
+    
+}
+.select-forum-ul li i:hover+span{
+      background: #F7F7F7;
+}
+.select-forum-ul li .icon.active{
+  transform: rotate(180deg);
+}
+  
 </style>
-<script type="text/javascript">
-var forum_json =[
-  {foreach $forum as $v}
-    <?php echo "{name:'$v[name]',id:$v[id],fid:$v[fid]},\r\n";?>
-  {/foreach}
-]
-function select_forum(obj){
-  $('#forum').val($(obj).val());
-  $('#forum').text($(obj).attr('data-name'));
-  hide_forum_select();
-}
-function append_html(id){
-    console.log('点击IDL: '+id);
-    var b = false;
-    var html='';
-    var fid = 0;
-    if(id != -1){
-        for(o in forum_json){
-          if(forum_json[o].id == id){
-            $('.hy-forum-select h1 button').text('选择 '+ forum_json[o].name);
-            $('.hy-forum-select h1 button').val(forum_json[o].id);
-            $('.hy-forum-select h1 button').attr('data-name',forum_json[o].name);
 
-            fid = forum_json[o].fid;
-            console.log(forum_json[o].fid);
-            break;
-          }
-        }
-        html ='<li data-id="'+fid+'"><a href="javascript:;">返回上一级</a></li>';
-    }
-
-    for(o in forum_json){
-      if(forum_json[o].fid == id){
-        b = true;
-        html+='<li data-id="'+forum_json[o].id+'"><a href="javascript:;"><img src="{#WWW}upload/forum'+forum_json[o].id+'.png" onerror="this.src=\'{#WWW}upload/de.png\'" align="left" alt="">'+forum_json[o].name+'</a></li>'
+<?php
+function select_forum($v,$forum){
+  if($v['z']){
+    echo '<ul>';
+    foreach ($v as $key => $vv) {
+      if(is_numeric($key) && is_array($vv)){
+        echo '<li><i id="forum-'.$vv['id'].'" data-z="'.($forum[$key]['z']?1:0).'" data-id="'.$vv['id'].'" data-name="'.$vv['name'].'"></i><span><img src="'.WWW.'upload/forum'.$key.'.png" onerror="this.src=\''.WWW.'upload/de.png\'">'.$vv['name'].($forum[$key]['z'] ? '<svg t="1513168291570" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3276" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512 608c-6.4 0-19.2 0-25.6-6.4l-128-128c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 531.2l102.4-102.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-128 128C531.2 608 518.4 608 512 608z" p-id="3277"></path></svg>':'').'</span>';
+        select_forum($forum[$key],$forum);
+        //var_dump($vv);die;
+        echo '</li>';
       }
     }
-    if(b){
-      $(".hy-forum-select li").animate({opacity:'0'},function(){
-        //alert('xxx');
-        $('.hy-forum-select ul').html(html);
-        $('.hy-forum-select li').click(forum_li);
-       });
-    }else{
-      $('.hy-forum-select h1 button').click();
-    }
+    echo '</ul>';
   }
-  function forum_li(){
-    var _this = $(this);
-    $('.hy-forum-select li').removeClass('a');
-    _this.addClass('a');
-    var id =parseInt( _this.attr('data-id'));
-    append_html(id);
- 
-
-  }
-
-
-
-$(function(){
-  var list = $('.hy-forum-select li');
-  list.click(forum_li);
-  append_html({php echo $forum[$fid]['fid']});
-  $('.hy-forum-select h1 button').text('选择 {php echo $forum[$fid]['name']}');
-  $('.hy-forum-select h1 button').val({php echo $forum[$fid]['id']});
-  $('.hy-forum-select h1 button').attr('data-name','{php echo $forum[$fid]['name']}');
-
-});
-function hide_forum_select(){
-  $('.hy-forum-select').hide();
-  $('.hy-back').remove();
 }
-function open_forum_select(){
-  var _this = $('.hy-forum-select');
-  forum_select_resize();
-  $('body').append('<div class="hy-back in"></div>');
-  _this.show();
-}
-function forum_select_resize(){
-  var _this = $('.hy-forum-select');
-  _this.css('left',($(window).width() - _this.width()) / 2 );
-
-  if(($(window).height() - (_this.height() + 30) ) / 2  < 0 ){
-
-    console.log('test1');
-    _this.css('top','10px' );
-    _this.height( $(window).height() - 20 );
-    
-
-  }
-  else{
-
-    $('.hy-forum-select').height('auto');
-    _this.css('top',($(window).height() - _this.height()) / 2 );
-  }
-
-  if(($(window).width() - (_this.width() + 30) ) / 2  < 0 ){
-    _this.width( $(window).width() - 20 );
-  }else{
-
-    $('.hy-forum-select').width('auto');
-    _this.css('left',($(window).width() - _this.width()) / 2 );
-  }
-  
-}
-$(window).resize(function(){
-  forum_select_resize();
-})
-</script>
-
+?>
 
 <div style="position: relative;display: table;border-collapse: separate;width: 100%;">
   <div style="display: table-cell;width: 150px;">
     <label>文章分类 <span></span></label>
-    <button value="{$fid}" onclick="open_forum_select()" id="forum" type="text" class="hy-text " style="width:150px;margin-bottom:10px;text-align: left;cursor:pointer">{php echo $forum[$fid]['name']}</button>
+    
+    <div class="select-forum">
+  <button value="{$fid}" onclick="open_select_forum()" id="forum" type="text" class="select-forum-input hy-text" style="width:150px;margin-bottom:10px;text-align: left;cursor:pointer">{php echo $forum[$fid]['name']}</button>
+  <div class="select-forum-ul">
+    <ul>
+      {foreach $forum as $key=> $v}
+      {if $v['fid']==-1}
+      <li>
+        <i id="forum-{$v.id}" data-z="{php echo $v['z']?1:0}" data-id="{$v.id}" data-name="{$v.name}"></i>
+        <span>
+          <img src="{#WWW}upload/forum{$key}.png" onerror="this.src='{#WWW}upload/de.png'">
+          {$v.name}
+          {if $v['z']}
+          <svg t="1513168291570" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3276" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512 608c-6.4 0-19.2 0-25.6-6.4l-128-128c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 531.2l102.4-102.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-128 128C531.2 608 518.4 608 512 608z" p-id="3277"></path></svg>
+          {/if}
+        </span>
+        <?php select_forum($v,$forum); ?>
+      </li>
+      {/if}
+      {/foreach}
+    </ul>
+  </div>
+</div>
+<script type="text/javascript">
+function open_select_forum(){
+  $('.select-forum-ul').toggle();
+  $(document).bind('mousedown.efscbarEvent',function(e){
+      if( $(e.target).parents('.select-forum').length === 0){
+        $(document).unbind("mousedown.efscbarEvent");
+        $('.select-forum-ul').hide();
+      }
+  });
+}
+$(function(){
+  var h = 40;
+  $('.select-forum-ul i').click(function(e){
+    console.log(e.target,this);
+    if(e.target!=this) return;
+
+    var _this = $(this);
+    
+    $('#forum').text(_this.data('name'));
+      $('#forum').val(_this.data('id'));
+      if(_this.data('z')==0){//
+        $('.select-forum-ul').hide();
+      }
+
+    if(parseInt(_this.parent().height()) != h) {//关闭
+      _this.next().children('svg').removeClass('active');
+      _this.parent().height(h+ parseInt(_this.next().next().height()) );
+      _this.parent().height(h);
+      
+    }else{//打开
+      //_this.data('id');
+      //;
+
+
+      _this.next().children('svg').addClass('active');
+      _this.parent().height(h+ parseInt(_this.next().next().height()) );
+      setTimeout(function(){
+        _this.parent().height('auto');
+      },500)
+    }
+    
+  });
+  <?php 
+
+  $fid = X('get.fid');
+  if(!isset($forum[$fid]))
+    $fid = false;
+  if($fid !== false){
+    echo "
+        $('#forum').val(".$forum[$fid]['id'].");
+        $('#forum').text('".$forum[$fid]['name']."');
+    ";
+  }
+  ?>
+
+});
+</script>
   </div>
   <div style="display: table-cell;position: relative;z-index: 2;padding-left: 10px;vertical-align: top;">
     <label>文章标题 <span></span></label>
@@ -201,8 +221,7 @@ $(window).resize(function(){
 
 <div class="uploadifybox" >
 <label for="file" style="display:block">上传附件</label>
-<input id="file_upload" name="photo" type="file" multiple="true">
-<!-- <button class="btn btn-primary" type="button" >选择我的历史上传文件</button> --> 
+<div id="file_upload"></div>
 <form id="fileform" style="">
     <table class="upload-table">
         <thead>
@@ -242,14 +261,15 @@ $(window).resize(function(){
 <script type="text/javascript">
         <?php $timestamp = time();?>
         $(function() {
-            $('#file_upload').uploadify({
+            $('#file_upload').Huploadify({
+                auto:true,
+                multi:true,
                 'formData'     : {
 
                     'timestamp' : '<?php echo $timestamp;?>',
                     'token'     : '<?php echo md5('unique_salt' . $timestamp);?>'
                 },
                 'buttonText': '选择文件[可多选]',
-                'swf'      : '{#WWW}public/uploadify/uploadify.swf',
                 'uploader' : '{php HYBBS_URL('post','uploadfile')}',
 
                 'height':30,
@@ -260,20 +280,19 @@ $(window).resize(function(){
                 'fileObjName' : 'photo', 
                 'formData':{ffmd5:"<?php echo cookie('HYBBS_HEX')?>"},
                
-                'onUploadSuccess' : function(file, data, response) {
+                onUploadComplete : function(file, data, response) {
                     //console.log(file);
                     var json = eval('('+data+')');
-                    if(response){
+                    
                         
-                        if(json.error){
-                            $("#filetable").append('<tr><td><input class="fileid" name="fileid" type="text" value="'+json.id+'" disabled></td><td><input type="text" value="'+json.name+'" disabled></td><td><input class="filegold" name="filegold" type="text" value="0"></td><td><input type="checkbox" style="width: auto;margin:10px" class="filehide" value=""/>(回复可见)</td><td><input name="filemess" class="filemess" type="text" value=""></td><td><button style="    margin-top: 4px;" type="button" class="btn btn-primary" onclick="$(this).parent().parent().remove()">删除</button></td></tr>');
-                            return;
-                        }else{
-                            swal(json.msg);
-                        }
-
+                    if(json.error){
+                        $("#filetable").append('<tr><td><input class="fileid" name="fileid" type="text" value="'+json.id+'" disabled></td><td><input type="text" value="'+json.name+'" disabled></td><td><input class="filegold" name="filegold" type="text" value="0"></td><td><input type="checkbox" style="width: auto;margin:10px" class="filehide" value=""/>(回复可见)</td><td><input name="filemess" class="filemess" type="text" value=""></td><td><button style="    margin-top: 4px;" type="button" class="btn btn-primary" onclick="$(this).parent().parent().remove()">删除</button></td></tr>');
+                        return;
+                    }else{
+                        swal(json.msg);
                     }
-                    swal(json.msg);
+
+                    
                     
                     
                 }
@@ -284,8 +303,8 @@ $(window).resize(function(){
 {/if}
 {hook p_simditor_post_eidt_1}
 <button type="button" class="btn btn-primary" id="post1"><i class="am-icon-check"></i> 提交编辑</button>
-<link href="{#WWW}public/uploadify/uploadify.css" type="text/css" rel="stylesheet">
-<script src="{#WWW}public/uploadify/jquery.uploadify.min.js"></script>
+<link href="{#WWW}Plugin/UMeditor/uploadify.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" src="{#WWW}Plugin/UMeditor/jquery.Huploadify.js"></script>
 <style>
 .simditor .simditor-toolbar > ul > li > .toolbar-item {
     display: table-cell;

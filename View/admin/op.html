@@ -16,10 +16,10 @@
             dataType:'json',
             success:function(e){
                 if(e.error){
-                    swal('成功','修改配置成功.','success');
+                    swal('成功',e.info,'success');
                 }
                 else{
-                    swal('错误','修改配置失败.','error');
+                    swal('错误',e.info,'error');
                 }
             },
             error:function(){
@@ -240,6 +240,13 @@
 										<span class="help-block">主题内页中 每页显示评论个数</span>
 									</div>
 								</div>
+								<div class="form-group">
+									<label class="col-lg-2 control-label">子评论显示数量</label>
+									<div class="col-lg-10">
+										<input class="form-control" type="text" name="post_post_show_size" value="{$conf.post_post_show_size}">
+										<span class="help-block"></span>
+									</div>
+								</div>
 
 								<div class="form-group">
 									<label class="col-lg-2 control-label">搜索页面每页显示个数</label>
@@ -266,6 +273,20 @@
 									<label class="col-lg-2 control-label">后台 - 主题管理显示个数</label>
 									<div class="col-lg-10">
 										<input class="form-control" type="text" name="adminthread" value="{$conf.adminthread}">
+										<span class="help-block"></span>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-lg-2 control-label">后台 - 评论管理显示个数</label>
+									<div class="col-lg-10">
+										<input class="form-control" type="text" name="admin_show_post" value="{$conf.admin_show_post}">
+										<span class="help-block"></span>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-lg-2 control-label">后台 - 子评论管理显示个数</label>
+									<div class="col-lg-10">
+										<input class="form-control" type="text" name="admin_show_post_post" value="{$conf.admin_show_post_post}">
 										<span class="help-block"></span>
 									</div>
 								</div>
@@ -537,5 +558,5 @@
         </div>
     </div>
     {include left_menu}
-</div>
+
 {include footer}

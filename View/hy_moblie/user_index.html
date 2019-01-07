@@ -10,12 +10,12 @@
     <a href="javascript:void(0)" >
         
         <button type="button"  style="margin-right:10px" class="hy-btn hy-btn-{if $data['friend_state']}danger{else}primary{/if} " onclick="friend({$data.uid},this)">{if $data['friend_state']}{$_LANG['取消关注']}{else}{$_LANG['关注']}{/if}</button>
-        <button style="float:right" type="button" class="hy-btn hy-btn-success" onclick="open_lt('{$data.user}',{$data.id},'{$data.avatar.b}');ys_header();">聊天</button>
+        <button style="float:right" type="button" class="hy-btn hy-btn-success" onclick="open_lt('{$data.user}',{$data.uid},'{$data.avatar.b}');ys_header();">聊天</button>
         <script type="text/javascript">
         function ys_header(){
             setTimeout(function(){
-                $("#lt-{$data.id} header").css({color:'#000',background:'#FFF'})
-                $("#lt-{$data.id} header a,#lt-{$data.id} header h1").css("cssText","color:#000!important");
+                $("#lt-{$data.uid} header").css({color:'#000',background:'#FFF'})
+                $("#lt-{$data.uid} header a,#lt-{$data.uid} header h1").css("cssText","color:#000!important");
             },500)
             
         }

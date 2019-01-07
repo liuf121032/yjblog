@@ -15,7 +15,7 @@
 //----------------------------------
 
 //框架版本
-define('HYPHP_VERSION','2.2');
+define('HYPHP_VERSION','2.5');
 
 //开始记录运行时间，运行内存
 $GLOBALS['START_TIME'] = microtime(TRUE);
@@ -29,13 +29,14 @@ header("Content-Type: text/html; charset=UTF-8");
 
 //记录脚本访问开始时间，以及用户IP
 $_SERVER['time'] = $_SERVER['REQUEST_TIME'];
-$_SERVER['ip'] = isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'0.0.0.0';
 $GLOBALS['LOAD_CLASS'] = $GLOBALS['SQL_LOG'] =array();
 
 if(!isset($_SERVER["QUERY_STRING"])) $_SERVER["QUERY_STRING"]='';
+if(!isset($_SERVER["REMOTE_ADDR"])) $_SERVER["REMOTE_ADDR"]='127.0.0.1';
+if(!isset($_SERVER["SERVER_ADDR"])) $_SERVER["SERVER_ADDR"]='';
 
 define('NOW_TIME',$_SERVER['REQUEST_TIME']);
-define('CLIENT_IP',$_SERVER['ip']);
+
 
 //记录用户访问方式
 define('IS_GET',$_SERVER['REQUEST_METHOD'] =='GET' ? true : false);

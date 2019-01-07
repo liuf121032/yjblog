@@ -6,13 +6,11 @@ class Admin extends HYBBS {
     public $menu_action =array();
     public function __construct(){
         parent::__construct();
-
         //{hook a_admin_init}
         //模板分组 admin 文件夹
         $this->view = 'admin';
         define('APP_WWW', 'http://app.hyphp.cn/');
         define("APP_KEY", $this->conf['key']);
-
 
         if(!IS_LOGIN){
             header('Location: '.HYBBS_URLA('user','login'));
@@ -24,11 +22,23 @@ class Admin extends HYBBS {
             exit('你不是管理员!');
         session('[start]');
         $md5 = session('admin');
+
         //echo $md5.'|';
         if(empty($md5)){
             $this->login();
             exit();
         }
+        /*$url1 = X("server.HTTP_REFERER");
+        $reg = '/\/\/([^\/]+)/i';  
+        preg_match($reg, $url1,$res1);
+        preg_match($reg, WWW,$res2);
+
+        
+        if(!isset($res1[1]) || !isset($res2[1]))
+            return $this->out();
+        if($res1[1] != $res2[1])
+            return $this->out();*/
+        
 
         $this->menu_action = array(
             'index'=>'',
@@ -59,8 +69,6 @@ class Admin extends HYBBS {
 
             if($one1){
                 del_cache_file($this->conf);
-                
-                
             }
             if($one2){
                 $Forum = S("Forum");
@@ -81,6 +89,8 @@ class Admin extends HYBBS {
                 if(is_file(TMP_PATH.'log.php'))
                     unlink(TMP_PATH.'log.php');
             }
+            if(IS_AJAX)
+                $this->json(['error'=>true,'info'=>'Success']);
             header('Location: '. HYBBS_URLA('admin'));
             exit;
         }
@@ -108,7 +118,10 @@ class Admin extends HYBBS {
                 header('Location: '. HYBBS_URLA('admin'));
                 exit;
             }
-            echo '密码错误';
+            if(IS_AJAX)
+                $this->json(['error'=>false,'info'=>'请重新登陆后台','data'=>'请重新登陆后台']);
+            else
+                echo '密码错误';
         }
     }
     public function out(){
@@ -305,6 +318,7 @@ class Admin extends HYBBS {
     }
     //用户管理
     public function user(){
+        $User = M('User');
         //{hook a_admin_user_1}
         if(IS_POST){
             $gn = intval(X("post.gn"));
@@ -316,7 +330,6 @@ class Admin extends HYBBS {
                 $gid = X("post.group");
 
                 //{hook a_admin_user_2}
-                $User = M("User");
                 if($User->is_user($user))
                     return $this->mess("账号已经存在 Error = 1!");
                 if($User->is_email($email))
@@ -336,8 +349,6 @@ class Admin extends HYBBS {
                 $credits = X("post.credits");
 
                 //{hook a_admin_user_4}
-
-                $User = M("User");
                 $data = $User->read($uid);
 
                 if($data['user'] != $user){
@@ -355,19 +366,19 @@ class Admin extends HYBBS {
                     'gid'=>$gid,
                     'gold'=>$gold,
                     'credits'=>$credits
-
                 );
                 if(!empty($pass)){
                     $xiu['pass'] = L("User")->md5_md5($pass,$data['salt']);
                 }
                 $User->update($xiu,['uid'=>$uid]);
+                //用户组升级检测
+                M('Usergroup')->check_up($uid);
                 //{hook a_admin_user_5}
                 return $this->mess("修改成功");
 
             }elseif($gn == '4'){ //删除用户
                 //{hook a_admin_user_6}
                 $uid = intval(X("post.id"));
-                $User = S("User");
                 $User->delete(['uid'=>$uid]);
 
                 S("Thread")->delete(array('uid'=>$uid));
@@ -390,7 +401,6 @@ class Admin extends HYBBS {
                 if(X('post.del_post') == 'on'){ //确认删除
                     $uid = X('post.id');
                     if(is_array($uid)){
-                        $User = S("User");
                         $Thread = S("Thread");
                         $Post = S("Post");
                         $Chat = S("Chat");
@@ -435,95 +445,85 @@ class Admin extends HYBBS {
         }
 
         //{hook a_admin_user_7}
-        $gn = intval(X("get.gn"));
         
-        if(!empty($gn)){ //搜索用户
+        if(!isset($_SERVER['REQUEST_URI']))
+            $_SERVER['REQUEST_URI']='';
+        $x = explode('?uid',$_SERVER['REQUEST_URI']);
+        if(isset($x[1]))
+            $x = '?uid' . $x[1];
+        else
+            $x='';
+        
+        $this->v('x',$x);
+        $pageid = intval(X('get.pageid',1));
 
-            $User = S("User");
-            if($gn=="1"){
-                $user = X("get.user");
-                !empty($user) or $user = '';
-                $this->v('skey',$user);
-                $usergroup = X("get.usergroup");
-                !empty($usergroup) or $usergroup = 0;
-                $this->v('sgroup',$usergroup);
-                //echo $user;
-                //var_dump($user);
+        $this->v('pageid',$pageid);
+        $len = $this->conf['adminuser'];
+        $where = [
+            'ORDER'=>['uid'=>'DESC'],
+            "LIMIT" => [($pageid-1) * $len, $len]
+        ];
 
-                $pageid=intval(X('get.pageid')) or $pageid=1;
 
-                $arr = array("LIMIT" => array(($pageid-1) * $this->conf['adminuser'], $this->conf['adminuser']));
-                if(empty($user) && !empty($usergroup)){ //搜索用户名
-                    $arr['gid'] = $usergroup;
-                }
-                elseif(!empty($user) && empty($usergroup)){
-                    $arr["OR"] = array(
-                        'user[~]'=>$user,
-                        "email[~]" => $user,
-                        'uid'=>$user,
-                    );
-                }
-                elseif(!empty($user) && !empty($usergroup)){
-                    $arr['AND'] = array(
-                        'OR' => array(
-                            'user[~]'=>$user,
-                            "email[~]" => $user,
-                            'uid'=>$user,
-                        ),
-                        'gid' => $usergroup
-                    );
-                }
-                    
-                
+        if(X('get.search_submit')){
+            $where = [
+                'AND'=>[],
+                'ORDER'=>['uid'=>'DESC'],
+                "LIMIT" => [($pageid-1) * $len, $len]
+            ];
+            $uid = X('get.uid');
+            $user = X('get.user');
+            $user_key = X('get.user_key');
+            $email = X('get.email');
+            $email_key = X('get.email_key');
+            $gid = X('get.gid');
+            $ban_login = X('get.ban_login');
+            $ban_post = X('get.ban_post');
+            
+            
+            
 
-                $data = $User->select("*",$arr);
-                //print_r($data);
-
-                $count = $User->count(array(
-                    "OR" => array(
-                        'user[~]'=>$user,
-                        "email[~]" => $user,
-                        'uid'=>$user,
-                    ),
-                ));
-                $count = (!$count)?1:$count;
-                $page_count = ($count % $this->conf['adminuser'] != 0)?(intval($count/$this->conf['adminuser'])+1) : intval($count/$this->conf['adminuser']);
-
-                $this->v("fj","&s=admin".EXP."user&gn=1" . (empty($user)?'':'&user='.$user) . (empty($usergroup) ? '' : '&usergroup='.$usergroup));
-                $this->v("pageid",$pageid);
-                $this->v("page_count",$page_count);
-                $this->v('user_count',$User->count());
-                $this->v('day_count',$User->count(array('atime[>]'=>strtotime(date('Y-m-d')))));
-                $this->v('data',$data);
-                return $this->display("user");
+            if(!empty($uid)){
+                $where['AND']['uid']=$uid;
+            }
+            if(!empty($user)){
+                $where['AND']['user']=$user;
+            }
+            if(!empty($user_key) && empty($uid) && empty($user)){
+                $where['AND']['user[~]']=$user_key;
+            }
+            if(!empty($email)){
+                $where['AND']['email']=$email;
+            }
+            if(!empty($email_key) && empty($email)){
+                $where['AND']['email[~]']=$email_key;
+            }
+            if(!empty($gid) && $gid != -1){
+                $where['AND']['gid']=$gid;
+            }
+            if(!empty($ban_login) ){
+                $where['AND']['ban_login']=$ban_login-1;
+            }
+            if(!empty($ban_post) ){
+                $where['AND']['ban_post']=$ban_post-1;
             }
 
-
-
-        }else{
-            //{hook a_admin_user_8}
-            $User = S("User");
-
-            $pageid=intval(X('get.pageid')) or $pageid=1;
-            $data = $User->select("*",array(
-                "ORDER"=>['uid'=>'DESC'],
-                "LIMIT" => array(($pageid-1) * $this->conf['adminuser'], $this->conf['adminuser'])
-            ));
-
-            $count = $User->count();
-            $count = (!$count)?1:$count;
-            $page_count = ($count % $this->conf['adminuser'] != 0)?(intval($count/$this->conf['adminuser'])+1) : intval($count/$this->conf['adminuser']);
-
-            //{hook a_admin_user_v}
-            $this->v("fj","&s=admin".EXP."user");
-            $this->v("pageid",$pageid);
-            $this->v("page_count",$page_count);
-            $this->v('data',$data);
-            $this->v('user_count',$User->count());
-            $this->v('day_count',$User->count(array('atime[>]'=>strtotime(date('Y-m-d')))));
-            $this->display("user");
+            
+            
         }
+        if(empty($where['AND']))
+            unset($where['AND']);
+        
+        $data = $User->select('*',$where);
+        unset($where['ORDER']);
+        unset($where['LIMIT']);
+        $count = $User->count($where);
+        $count = (!$count)?1:$count;
+        $page_count = ($count % $len != 0)?(intval($count/$len)+1) : intval($count/$len);
 
+        $this->v("page_count",$page_count);
+        $this->v("data",$data);
+        $this->display('user');
     }
     //用户组
     public  function usergroup(){
@@ -562,6 +562,7 @@ class Admin extends HYBBS {
                     'gid'=>intval(X("post.id")),
                     'name'=>X("post.name"),
                     'credits'=>X("post.credits"),
+                    'credits_max'=>X("post.credits_max"),
                     'space_size'=>X("post.space_size"),
                     'chat_size'=>X("post.chat_size"),
                     'json'=>json_encode(array(
@@ -586,6 +587,7 @@ class Admin extends HYBBS {
                     'gid'=>intval(X("post.id")),
                     'name'=>X("post.name"),
                     'credits'=>X('post.credits'),
+                    'credits_max'=>X('post.credits_max'),
                     'space_size'=>X("post.space_size"),
                     'chat_size'=>X("post.chat_size"),
 
@@ -628,6 +630,7 @@ class Admin extends HYBBS {
     }
     //文章管理
     public function thread(){
+        $Thread = S("Thread");
         //{hook a_admin_thread_1}
         if(IS_POST){
             $gn = X("post.gn");
@@ -637,97 +640,300 @@ class Admin extends HYBBS {
                     foreach ($tid as &$v) {
                         $v=intval($v);
                     }
-                    S("Thread")->delete(['OR'=>['tid'=>$tid]]);
-                    if(X("post.del_post"))
-                        S("Post")->delete(['OR'=>['tid'=>$tid]]);
+                    $Thread->delete(['OR'=>['tid'=>$tid]]);
+                    
+                    S("Post")->delete(['OR'=>['tid'=>$tid]]);
                     
                     if(X("post.del_file"))
                         S("Fileinfo")   ->delete(['OR'=>['tid'=>$tid]]);
                     S("Vote_thread")    ->delete(['OR'=>['tid'=>$tid]]);
                     S("Threadgold")     ->delete(['OR'=>['tid'=>$tid]]);
+                    S("Post_post")      ->delete(['OR'=>['tid'=>$tid]]);
                 }
+            }
+        }
+
+        if(!isset($_SERVER['REQUEST_URI']))
+            $_SERVER['REQUEST_URI']='';
+        $x = explode('?uid',$_SERVER['REQUEST_URI']);
+        if(isset($x[1]))
+            $x = '?uid' . $x[1];
+        else
+            $x='';
+        //var_dump($_SERVER);
+        
+        $this->v('x',$x);
+        $pageid = intval(X('get.pageid',1));
+
+        $this->v('pageid',$pageid);
+        $len = $this->conf['adminthread'];
+        $where = [
+            'ORDER'=>['tid'=>'DESC'],
+            "LIMIT" => [($pageid-1) * $len, $len]
+        ];
+        //{hook a_admin_thread_2}
+        
+
+        if(X('get.search_submit')){
+            $where = [
+                'AND'=>[],
+                'ORDER'=>['tid'=>'DESC'],
+                "LIMIT" => [($pageid-1) * $len, $len]
+            ];
+            $uid = X('get.uid');
+            $username = X('get.username');
+            $tid = X('get.tid');
+            $title = X('get.title');
+            $fid = X('get.fid');
+            $top = X('get.top');
+            $state = X('get.state');
+            
+            
+
+            if(!empty($uid)){
+                $where['AND']['uid']=$uid;
+            }
+            if(!empty($username)){
+                $where['AND']['uid']=M('User')->user_to_uid($username);
+            }
+            if(!empty($tid)){
+                $where['AND']['tid']=$tid;
+            }
+            
+            if(!empty($title)){
+                $where['AND']['title[~]']=$title;
+            }
+            if($fid != -1 && $fid !==''){
+                $where['AND']['fid']=$fid;
+            }
+            if(!empty($top)){
+                $where['AND']['top']=$top;
+            }
+
+            if($state != -1 && !empty($state)){
+                $where['AND']['state']=$state-1;
             }
             
         }
+        if(empty($where['AND']))
+            unset($where['AND']);
         
-        //{hook a_admin_thread_2}
-        $fid = X("get.forum");
-        
-        if($fid ==='')
-            $fid = -1;
-
-        $this->v("sforum",$fid);
-
-        $Thread = S("Thread");
-
-        $forum_data = S("Forum")->select("*");
-        $pageid=intval(X('get.pageid')) or $pageid=1;
-        $arr = [
-            "ORDER"=> ['tid'=>'DESC'],
-            "LIMIT" => array(($pageid-1) * $this->conf['adminthread'], $this->conf['adminthread'])
-        ];
-        if(isset($this->_forum[$fid]))
-            $arr['fid'] = $fid;
-        $data = $Thread->select("*",$arr);
-
-        $count = $Thread->count($arr);
+        $data = $Thread->select('*',$where);
+        unset($where['ORDER']);
+        unset($where['LIMIT']);
+        $count = $Thread->count($where);
         $count = (!$count)?1:$count;
-        $page_count = ($count % $this->conf['adminthread'] != 0)?(intval($count/$this->conf['adminthread'])+1) : intval($count/$this->conf['adminthread']);
-
-        //{hook a_admin_thread_3}
-        $User = M("User");
-        $user_tmp = array();
-        foreach ($data as &$vv) {
-            if(empty($user_tmp[$vv['uid']])){
-                $user_tmp[$vv['uid']] = $User->uid_to_user(intval($vv['uid']));
-            }
-            $vv['user'] = $user_tmp[$vv['uid']];
-        }
-        //print_r($data);
-
-        $forum = array();
-        foreach ($forum_data as $v) {
-
-            $forum[$v['id']]=$v;
-
-        }
+        $page_count = ($count % $len != 0)?(intval($count/$len)+1) : intval($count/$len);
 
         //{hook a_admin_thread_v}
-        $this->v("fj",($fid ==='&s=admin'.EXP.'thread'?'':'&s=admin'.EXP.'thread&forum='.$fid));
-        $this->v("pageid",$pageid);
         $this->v("page_count",$page_count);
-        $this->v("forum",$forum);
         $this->v('data',$data);
-        $this->v("count",array(
-            'thread'=>$Thread->count(),
-            'post'=>S("Post")->count(),
-            'day_thread'=>$Thread->count(array('atime[>]'=>strtotime(date('Y-m-d')))),
-            'day_post'=>S("Post")->count(array('atime[>]'=>strtotime(date('Y-m-d'))))
-        ));
         $this->display('thread');
     
 
+    }
+    public function post(){
+        $Post = S('Post');
+        if(IS_POST){
+            $gn = X("post.gn");
+
+            if($gn == 'del'){
+                $pid = X("post.id");
+                if(!empty($pid)){
+                    foreach ($pid as &$v) {
+                        $v=intval($v);
+                    }
+                    
+                    $Post             ->delete(['OR'=>['pid'=>$pid]]);
+                    S("Vote_post")    ->delete(['OR'=>['pid'=>$pid]]);
+                    S("Post_post")    ->delete(['OR'=>['pid'=>$pid]]);
+                }
+            }
+        }
+
+        if(!isset($_SERVER['REQUEST_URI']))
+            $_SERVER['REQUEST_URI']='';
+        $x = explode('?uid',$_SERVER['REQUEST_URI']);
+        if(isset($x[1]))
+            $x = '?uid' . $x[1];
+        else
+            $x='';
+        //var_dump($_SERVER);
+        
+        $this->v('x',$x);
+        $pageid = intval(X('get.pageid',1));
+
+        $this->v('pageid',$pageid);
+        $len = $this->conf['admin_show_post'];
+        $where = [
+            'ORDER'=>['pid'=>'DESC'],
+            "LIMIT" => [($pageid-1) * $len, $len]
+        ];
+
+
+        if(X('get.search_submit')){
+            $where = [
+                'AND'=>[],
+                'ORDER'=>['pid'=>'DESC'],
+                "LIMIT" => [($pageid-1) * $len, $len]
+            ];
+            $uid = X('get.uid');
+            $username = X('get.username');
+            $pid = X('get.pid');
+            $tid = X('get.tid');
+            $content = X('get.content');
+            $fid = X('get.fid');
+            //$top = X('get.top');
+            //$state = X('get.state');
+            
+            
+
+            if(!empty($uid)){
+                $where['AND']['uid']=$uid;
+            }
+            if(!empty($username)){
+                $where['AND']['uid']=M('User')->user_to_uid($username);
+            }
+            if(!empty($pid)){
+                $where['AND']['pid']=$pid;
+            }
+            if(!empty($tid)){
+                $where['AND']['tid']=$tid;
+            }
+            
+            if(!empty($content)){
+                $where['AND']['content[~]']=$content;
+            }
+            if($fid != -1 && $fid !==''){
+                $where['AND']['fid']=$fid;
+            }
+            /*if(!empty($top)){
+                $where['AND']['top']=$top;
+            }*/
+
+            /*if($state != -1 && !empty($state)){
+                $where['AND']['state']=$state-1;
+            }*/
+            
+        }
+        if(empty($where['AND']))
+            unset($where['AND']);
+        
+        $data = $Post->select('*',$where);
+        unset($where['ORDER']);
+        unset($where['LIMIT']);
+        $count = $Post->count($where);
+        $count = (!$count)?1:$count;
+        $page_count = ($count % $len != 0)?(intval($count/$len)+1) : intval($count/$len);
+
+        $this->v("page_count",$page_count);
+        $this->v("data",$data);
+        $this->display('post');
+    }
+    public function post_post(){
+        $Post_post = S("Post_post");
+        if(IS_POST){
+            $gn = X("post.gn");
+
+            if($gn == 'del'){
+                $id = X("post.id");
+                if(!empty($id)){
+                    foreach ($id as &$v) {
+                        $v=intval($v);
+                    }
+                    $Post_post    ->delete(['OR'=>['id'=>$id]]);
+                }
+            }
+        }
+
+
+        if(!isset($_SERVER['REQUEST_URI']))
+            $_SERVER['REQUEST_URI']='';
+        $x = explode('?uid',$_SERVER['REQUEST_URI']);
+        if(isset($x[1]))
+            $x = '?uid' . $x[1];
+        else
+            $x='';
+        //var_dump($_SERVER);
+        
+        $this->v('x',$x);
+        $pageid = intval(X('get.pageid',1));
+
+        $this->v('pageid',$pageid);
+        $len = $this->conf['admin_show_post'];
+        $where = [
+            'ORDER'=>['pid'=>'DESC'],
+            "LIMIT" => [($pageid-1) * $len, $len]
+        ];
+
+
+        if(X('get.search_submit')){
+            $where = [
+                'AND'=>[],
+                'ORDER'=>['pid'=>'DESC'],
+                "LIMIT" => [($pageid-1) * $len, $len]
+            ];
+            $uid = X('get.uid');
+            $username = X('get.username');
+            $id = X('get.id');
+            $pid = X('get.pid');
+            $tid = X('get.tid');
+            $content = X('get.content');
+            //$fid = X('get.fid');
+            //$top = X('get.top');
+            //$state = X('get.state');
+            
+            
+
+            if(!empty($uid)){
+                $where['AND']['uid']=$uid;
+            }
+            if(!empty($username)){
+                $where['AND']['uid']=M('User')->user_to_uid($username);
+            }
+            if(!empty($id)){
+                $where['AND']['id']=$id;
+            }
+            if(!empty($pid)){
+                $where['AND']['pid']=$pid;
+            }
+            if(!empty($tid)){
+                $where['AND']['tid']=$tid;
+            }
+            
+            if(!empty($content)){
+                $where['AND']['content[~]']=$content;
+            }
+            /*if($fid != -1 && $fid !==''){
+                $where['AND']['fid']=$fid;
+            }*/
+            /*if(!empty($top)){
+                $where['AND']['top']=$top;
+            }*/
+
+            /*if($state != -1 && !empty($state)){
+                $where['AND']['state']=$state-1;
+            }*/
+            
+        }
+        if(empty($where['AND']))
+            unset($where['AND']);
+        
+        $data = $Post_post->select('*',$where);
+        unset($where['ORDER']);
+        unset($where['LIMIT']);
+        $count = $Post_post->count($where);
+        $count = (!$count)?1:$count;
+        $page_count = ($count % $len != 0)?(intval($count/$len)+1) : intval($count/$len);
+
+        $this->v("page_count",$page_count);
+        $this->v("data",$data);
+        $this->display('post_post');
     }
     private function mess($a){
         //{hook a_admin_mess_v}
         $this->v('mess',$a);
         $this->display("message");
-    }
-    private function uh($str)
-    {
-        $farr = array(
-            "/<(?)(script|style|html|body|title|link|meta)([^>]*?)>/isu",
-            "/(<[^>]*)on[a-za-z]+s*=([^>]*>)/isu",
-
-        );
-        $tarr = array(
-            " ",
-            " ",
-
-        );
-        $str = preg_replace( $farr,$tarr,$str);
-        $str = preg_replace('/style=".*?"/i', '', $str);
-        return $str;
     }
     public function view(){
 
@@ -861,13 +1067,14 @@ return array(
             $down = X("post.down");
             if(!empty($down)){
 
+                $name = $down;
                 if(X("post.gn") == 'update'){
+
+                    $inc = get_view_inc($name);
+
                     if(!deldir(VIEW_PATH . $down,false,true))
                         $this->json(array('error'=>false,'data'=>"无法删除旧模板,请手动删除" . VIEW_PATH . $down ));
                 }
-
-
-
 
                 if(is_dir(VIEW_PATH . $down))
                     $this->json(array('error'=>false,'data'=>'模板目录已有相同名称模板,如果你要重新下载,需要手动删除模板'));
@@ -877,8 +1084,6 @@ return array(
                 if(is_file($down_path))
                     $this->json(array('error'=>false,'data'=>'下载模板,权限出现问题,无法删除旧压缩包,请检查目录权限'));
                 
-                $name = $down;
-
                 $json = http_get_app(APP_WWW . 'json/get_down_path1',array('name'=>$name));
 
                 if(empty($json))
@@ -888,18 +1093,36 @@ return array(
                     $this->json(array('error'=>false,'data'=>$json['data']));
                 
                 $down = APP_WWW . 'app/' . $name . '/' .$json['data'];
-
-
+                //下载模板
                 http_down( $down_path, $down);
-
                 if(!is_file($down_path))
                     $this->json(array('error'=>true,'data'=>'没有下载到模板压缩包'));
-                    
+                
+                //解压模板
                 $zip = L("Zip");
                 $zip->unzip($down_path, VIEW_PATH);
-                if(is_dir(VIEW_PATH . $down)){
-                    if(is_file(VIEW_PATH . $down . '/on'))
-                        unlink(VIEW_PATH . $down . '/on');
+
+                if(is_dir(VIEW_PATH . $name)){
+                    if(is_file(VIEW_PATH . $name . '/on'))
+                        unlink(VIEW_PATH . $name . '/on');
+
+                    
+                    $inc1 = get_view_inc($name);
+                    if(!empty($inc1) && !empty($inc)){
+
+                        foreach ($inc1 as $k => &$v) {
+                            if(isset($inc[$k])){
+                                if(!empty($inc[$k])){
+                                    $v = $inc[$k];
+                                }
+                            }
+                            
+                        }
+
+
+                    }
+                    put_tmp_file(VIEW_PATH . "{$name}/inc.php",json_encode($inc1));
+
                     $this->json(array('error'=>true,'data'=>'下载完成'));
                 }
                     
@@ -1016,6 +1239,12 @@ return array(
             $uploadfilemax     = X("post.uploadfilemax");
 
             $adminthread    = X("post.adminthread");
+            $admin_show_post    = X("post.admin_show_post");
+            $admin_show_post_post    = X("post.admin_show_post_post");
+            $post_post_show_size    = X("post.post_post_show_size");
+
+            
+            
             $adminuser      = X("post.adminuser");
 
             $key    = trim(X("post.key"));
@@ -1105,6 +1334,10 @@ return array(
             $this->conf['uploadfilemax']=$uploadfilemax;
 
             $this->conf['adminthread']=$adminthread;
+            $this->conf['admin_show_post']=$admin_show_post;
+            $this->conf['admin_show_post_post']=$admin_show_post_post;
+            $this->conf['post_post_show_size']=$post_post_show_size;
+            
             $this->conf['adminuser']=$adminuser;
             $this->conf['key']=$key;
 
@@ -1261,6 +1494,7 @@ return array(
         $this->json(array('error'=>true,'data'=>$upload->getError()));
         
     }
+    //上传模板
     public function update_view(){
         $upload = new \Lib\Upload();// 实例化上传类
         $upload->maxSize   =  0;// 设置附件上传大小 
@@ -1303,7 +1537,8 @@ return array(
 
                 include $path;
                 $result = plugin_install();
-                if($result === true){
+                $verify = X('post.verify');
+                if($result === true || $verify == 'on' ){
                     file_put_contents(PLUGIN_PATH . "/{$name}/install",'');
                     del_cache_file($this->conf);
                     return $this->mess('安装成功');
@@ -1324,7 +1559,8 @@ return array(
 
                 include $path;
                 $result = plugin_uninstall();
-                if($result === true){
+                $verify = X('post.verify');
+                if($result === true || $verify == 'on' ){
                     //return $this->mess('这个插件并没有安装,你不需要卸载');
                     if(is_file(PLUGIN_PATH . "/{$name}/install"))
                         unlink(PLUGIN_PATH . "/{$name}/install");
@@ -1425,7 +1661,7 @@ function plugin_uninstall(){
                         die (str_replace('<?php','','<div class="alert alert-danger alert-custom alert-dismissible" role="alert">
                             <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                             <i class="fa fa-times-circle m-right-xs"></i> <strong>警告!</strong>插件的安装与卸载可能会做一些危险动作,请慎重执行!
-                        </div><pre>'.file_get_contents($path)."</pre>"));
+                        </div><pre>'.file_get_contents($path).'</pre><div class="form-group" style="text-align: right;line-height: 1.2;"><div class="custom-checkbox"><input name="verify" type="checkbox" id="chk1"><label for="chk1"></label></div>强制安装</div>'));
 
 
                 }elseif($gn == 'uninstall'){
@@ -1436,7 +1672,7 @@ function plugin_uninstall(){
                     die (str_replace('<?php','','<div class="alert alert-danger alert-custom alert-dismissible" role="alert">
                         <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                         <i class="fa fa-times-circle m-right-xs"></i> <strong>警告!</strong>插件的安装与卸载可能会做一些危险动作,请慎重执行!
-                    </div><pre>'.file_get_contents($path)."</pre>"));
+                    </div><pre>'.file_get_contents($path).'</pre><div class="form-group" style="text-align: right;line-height: 1.2;"><div class="custom-checkbox"><input name="verify" type="checkbox" id="chk1"><label for="chk1"></label></div>强制卸载</div>'));
                 }
 
             }
@@ -1885,43 +2121,69 @@ function plugin_uninstall(){
         $this->json(array('error'=>true,'info'=>'修改配置成功'));
     }
     public function log(){
-        if(IS_POST){
-            $pageid = X("post.page_id");
-            $page_size = X("post.page_size");
-            $user = X("post.user");
-            $select_type = array(
-                "LIMIT" => array(($pageid-1) * $page_size, $page_size),
-                "ORDER" => ['id'=>'DESC']
-            );
-            if(!empty($user)){
-                $uid = M("User")->user_to_id(trim($user));
-                $select_type['uid']=$uid;
-            }
-            $data = S("Log")->select("*",
-                $select_type
-            );
+        $Log = S('Log');
 
-            $User=M("User");
-            if(empty($data))
-                $data=array();
-            foreach ($data as &$v) {
-                $v['user']=$User->uid_to_user($v['uid']);
-                $v['time']=date('Y-m-d H:is',$v['atime']);
-            }
 
-            $this->json(array('error'=>empty($data)?false:true,'data'=>$data));
-        }
-        $data = S("Log")->select("*",array("ORDER" => ['id'=>'DESC'],'LIMIT'=>10));
+        if(!isset($_SERVER['REQUEST_URI']))
+            $_SERVER['REQUEST_URI']='';
+        $x = explode('?uid',$_SERVER['REQUEST_URI']);
+        if(isset($x[1]))
+            $x = '?uid' . $x[1];
+        else
+            $x='';
         
+        $this->v('x',$x);
+        $pageid = intval(X('get.pageid',1));
 
-        $User=M("User");
-        if(empty($data))
-            $data=array();
-        foreach ($data as &$v) {
-            $v['user']=$User->uid_to_user($v['uid']);
+        $this->v('pageid',$pageid);
+        $len = 10;
+        $where = [
+            'ORDER'=>['id'=>'DESC'],
+            "LIMIT" => [($pageid-1) * $len, $len]
+        ];
+
+
+        if(X('get.search_submit')){
+            $where = [
+                'AND'=>[],
+                'ORDER'=>['id'=>'DESC'],
+                "LIMIT" => [($pageid-1) * $len, $len]
+            ];
+            $uid = X('get.uid');
+            $user = X('get.user');
+            
+            
+            
+            
+
+            if(!empty($uid)){
+                $where['AND']['uid']=$uid;
+            }
+            if(!empty($user)){
+                $where['AND']['uid']=M('User')->user_to_uid($user);
+            }
+            
+            
+
+            
+            
         }
+        if(empty($where['AND']))
+            unset($where['AND']);
+        
+        $data = $Log->select('*',$where);
+        unset($where['ORDER']);
+        unset($where['LIMIT']);
+        $count = $Log->count($where);
+        $count = (!$count)?1:$count;
+        $page_count = ($count % $len != 0)?(intval($count/$len)+1) : intval($count/$len);
+
+        $this->v("page_count",$page_count);
         $this->v("data",$data);
         $this->display("log");
+    }
+    public function log_php(){
+        $this->display("log_php");
     }
     //更改用户 允许登陆 金牙状态
     public function ajax_user_switch(){
@@ -1960,6 +2222,9 @@ function plugin_uninstall(){
             S('Post')->delete(['AND'=>['uid'=>$uid,'isthread'=>0]]);
             $User->update(['posts'=>0],['uid'=>$uid]);
             $this->json(['error'=>true,'info'=>'删除评论成功']);
+        }elseif($type == 'del_post'){
+            S('Post_post')->delete(['uid'=>$uid]);
+            $this->json(['error'=>true,'info'=>'删除子评论成功']);
         }elseif($type == 'del_file') {
             S('File')->delete(['uid'=>$uid]);
             S('Fileinfo')->delete(['uid'=>$uid]);
@@ -1975,6 +2240,10 @@ function plugin_uninstall(){
         }
         $this->json(['error'=>false,'info'=>'参数丢失!']);
     }
+    public function is_rewrite(){
+        die('on');
+    }
+
 
 
     //{hook a_admin_fun}

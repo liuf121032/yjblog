@@ -14,11 +14,9 @@ class HYBBS extends Action {
     public $_username = false;
     public $CacheObj;
     public $_count = array();
-    
     //{hook a_hybbs_var}
 
     public function __construct(){
-
         if(isset($GLOBALS['HYBBS'])) //防止多次执行 构造函数
             return;
         $GLOBALS['HYBBS'] = true;
@@ -116,7 +114,6 @@ class HYBBS extends Action {
                         $this->_uid = $user_data['uid'];
 
                         $this->_group = $user_data['gid'];
-                        //替换cookie美容
                         $user = $user_data;
                         $user['avatar'] = $this->avatar($user['user']);
                         $user['mess'] = M("Chat_count")->get_c($user['uid']);
@@ -217,7 +214,7 @@ class HYBBS extends Action {
             'keywords'      =>  'HYBBS,HYPHP',
             'description'   =>  'HYBBS国内开源PHP论坛程序',
 
-            'theme'         =>  'hy_boss',
+            'theme'         =>  'hybbs',
             'userview'      =>  'hy_user',
             'messview'      =>  'hy_message',
             'userview2'     =>  'hy_user',
@@ -260,6 +257,10 @@ class HYBBS extends Action {
             'post_image_size'    =>  5,
             'adminforum'        =>  10,
             'adminthread'        =>  10,
+            'post_post_show_size'   =>5,
+            'admin_show_post'     =>10,
+            'admin_show_post_post'     =>10,
+
             'adminuser'        =>  10,
             
             'cache_type'        =>  'File',
@@ -371,8 +372,6 @@ class HYBBS extends Action {
         //{hook a_hybbs_avatar}
         $path = INDEX_PATH . 'upload/avatar/' . md5($user);
         $path1 = 'upload/avatar/' . md5($user);
-        //echo $path.'-a.jpg';
-        
         if(!is_file($path.'-a.jpg'))
             return array(
                 'a'=>'public/images/user.gif',

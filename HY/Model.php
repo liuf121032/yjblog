@@ -1,7 +1,9 @@
 <?php
 namespace HY;
 use PDO;
-
+/**
+ * Model.php Model
+*/
 
 // class HY_MODEL{
 //     static public $pdo =false;

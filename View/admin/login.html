@@ -11,7 +11,11 @@
 					<div class="h4 text-white">{$user.user}</div>
                     <form action="{php HYBBS_URL('admin','login')}" method="POST">
     					<div class="input-group m-top-sm">
-    						<input type="password" name="pass" class="form-control text-sm" placeholder="再次输入你的密码">
+    						<span class="input-group-btn">
+    							
+    							<a class="btn btn-info" href="{#WWW}"><i class="fa fa-home"></i> </a>
+    						</span>
+    						<input type="password" name="pass" class="form-control text-sm" placeholder="输入管理员密码">
     						<span class="input-group-btn">
     							<button class="btn btn-success">
     								<i class="fa fa-arrow-right"></i>

@@ -21,7 +21,7 @@
 
 .edui-toolbar .edui-btn-toolbar {
     position: relative;
-    padding: 5px
+    
 }
 
 .edui-container .edui-editor-body {
@@ -44,7 +44,7 @@
     display: block;
     word-wrap: break-word;
     font-size: 16px;
-    font-family: sans-serif
+    
 }
 
 .edui-editor-body.focus {
@@ -83,7 +83,9 @@
     margin: 0 1px;
     padding: 1px;
     border: 0;
-    background: 0 0
+    background: 0 0;
+    text-align: center;
+        cursor: pointer;
 }
 
 .edui-btn-toolbar .edui-btn .edui-icon {
@@ -91,16 +93,28 @@
     height: 20px;
     margin: 0;
     padding: 0;
-    background-repeat: no-repeat;
-    background-image: url(../images/icons.png);
-    background-image: url(../images/icons.gif) \9
+        width: 40px;
+    height: 40px;
+    outline: none;
+    color: #333333;
+    font-size: 16px;
+    line-height: 40px;
+    vertical-align: middle;
+    opacity: 0.6;
+
+    /* background-repeat: no-repeat; */
+    /* background-image: url(../images/icons.png);
+    background-image: url(../images/icons.gif) \9 */
 }
 
 .edui-btn-toolbar .edui-btn.edui-hover,.edui-btn-toolbar .edui-btn.edui-active {
-    background-color: #d5e1f2;
+    /* background-color: #d5e1f2;
     padding: 0;
     border: 1px solid #a3bde3;
-    _z-index: 1
+    _z-index: 1 */
+}
+.edui-btn-toolbar .edui-btn.edui-hover .edui-icon{
+    opacity:1;
 }
 
 .edui-btn-toolbar .edui-btn.edui-disabled {
@@ -300,26 +314,38 @@
 }
 
 .edui-btn-toolbar .edui-combobox {
-    border: 1px solid #CCC;
+    
     padding: 0;
     margin: 0 2px;
-    line-height: 20px
+    line-height: 20px;
+        width: 40px;
+    height: 40px;
 }
 
+.edui-btn-name-fontfamily {
+    width: 50px !important;
+}
+.edui-btn-name-paragraph {
+            width: 57px !important;
+}
+.edui-emotion-smileytable{
+        border: 0 !important;
+}
 .edui-combobox .edui-button-label {
     position: relative;
     display: inline-block;
     vertical-align: top;
     *display: inline;
     *zoom: 1;
-    width: 60px;
+    
     height: 20px;
-    line-height: 20px;
+    line-height: 34px;
     padding: 2px;
     margin: 0;
     font-size: 12px;
     text-align: center;
-    cursor: default
+    cursor: default;
+        display: block;
 }
 
 .edui-combobox .edui-button-spacing {
@@ -378,10 +404,16 @@
     display: block;
     border: 1px solid #fff
 }
+.edui-btn-name-insertcode{
+    width: 80px !important;
+}
+.edui-combobox-insertcode,.edui-combobox-fontfamily{
+    height: 300px;
+    overflow-y: auto;
+}
 
 .edui-combobox-menu .edui-combobox-item-label {
-    height: 25px;
-    line-height: 25px;
+    
     display: inline-block;
     _display: inline;
     _zoom: 1;
@@ -666,7 +698,7 @@
     padding: 0;
     border-bottom: 1px solid #ddd;
     list-style: none;
-    height: 30px
+    height: 33px
 }
 
 .edui-tab-nav .edui-tab-item {
@@ -812,7 +844,9 @@
 }
 
 .edui-toolbar .edui-separator {
-    width: 2px;
+    display:none;
+    /* display: inline; */
+    /* width: 2px;
     height: 20px;
     padding: 1px 2px;
     background: url(../images/icons.png) -179px 1px;
@@ -821,7 +855,7 @@
     vertical-align: top;
     *display: inline;
     *zoom: 1;
-    border: 0
+    border: 0 */
 }
 
 .edui-body-container ul,.edui-body-container li,.edui-body-container ol {
@@ -841,7 +875,26 @@
     width: auto !important;
 }
 
-
 .edui-body-container+textarea {
     width: 100% !important;
+}
+.edui-container hide{
+    padding: 10px 0 10px 10px;
+    margin: 15px 0 13px;
+    background: #f1f1f1;
+    display: block;
+    border: solid 2px #ababab;
+    border-style: dashed;
+    color: #b52020;
+    position: relative;
+}
+.edui-container hide:before{
+        content: '隐藏内容';
+    position: absolute;
+    top: -12px;
+    left: 6px;
+    background: #FFF;
+    padding: 0 5px;
+    font-size: 14px;
+    color: #585858;
 }

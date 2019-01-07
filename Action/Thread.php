@@ -178,7 +178,7 @@ class Thread extends HYBBS {
             //{hook a_thread_empty_66}
 
 
-            //var_dump($is_post);
+            
             foreach ($Filelist as $key => &$v) {
 
                 //获取附件信息
@@ -219,6 +219,99 @@ class Thread extends HYBBS {
             //{hook a_thread_empty_7}
         }
 
+    }
+    //子评论页面
+    public function post(){
+        if(IS_POST && IS_AJAX){
+            $pid = intval(X('post.pid'));
+            $pageid=intval(X('post.pageid')) or $pageid=1;
+            $sort = intval(X('post.sort'));
+            if($sort !=0 && $sort !=1)
+                $sort=0;
+            $ORDER = ['id'=>'ASC'];
+            if($sort)
+                $ORDER = ['id'=>'DESC'];
+
+
+            $Post = M('Post');
+            if(!$Post->is_pid($pid))
+                $this->json(['error'=>false,'info'=>'不存在该评论！']);
+
+            $Post_post = M('Post_post');
+            $User = M('User');
+
+            $data = $Post_post->get_list($pid,$pageid,BBSCONF('post_post_show_size'),$ORDER);
+            $User->auto_add_user($data);
+            foreach ($data as $k => &$v) {
+                $v['avatar']=$this->avatar($v['user']);
+                $v['atime_str'] = humandate($v['atime']);
+            }
+
+
+            $this->json(['error'=>true,'info'=>$data]);
+
+        }
+        $this->v("title",'回复主题');
+
+        $pid=intval(isset($_GET['HY_URL'][2]) ? $_GET['HY_URL'][2] : 1) or $pid=1;
+        $pageid=intval(isset($_GET['HY_URL'][3]) ? $_GET['HY_URL'][3] : 1) or $pageid=1;
+
+        $order = X('get.order');
+        
+        $ORDER = ['id'=>'ASC'];
+        if($order == 'desc')
+            $ORDER = ['id'=>'DESC'];
+            
+
+        
+        $Post = M('Post');
+        $post_data = $Post->read($pid);
+        if(empty($post_data))
+            return $this->message('不存在该评论');
+        $User = M('User');
+        $post_data['user'] = $User->uid_to_user($post_data['uid']);
+        $post_data['avatar'] = $this->avatar($post_data['user']);
+
+        
+        $this->v('pageid',$pageid);
+        $Post_post = M('Post_post');
+        $Show_mun = intval(BBSCONF('post_post_show_size'));
+        $post_post_data=$Post_post->get_list($pid,$pageid,$Show_mun,$ORDER);
+        $count = $post_data['posts'];//$Post_post->count(array('pid'=>$pid));
+
+        if(empty($post_post_data))
+            $post_post_data = array();
+
+        $User->auto_add_user($post_post_data);
+        foreach ($post_post_data as &$v) {
+            $v['avatar']=$this->avatar($v['user']);
+            $v['atime_str'] = humandate($v['atime']);
+        }
+
+        $tid = $post_data['tid'];
+        //获取文章数据
+        $thread_data = $this->CacheObj->get('thread_data_'.$tid);
+        if(empty($thread_data) || DEBUG){
+            //{hook a_thread_empty_cache_1}
+            $thread_data = M('Thread')->read($tid);
+            if(empty($thread_data))
+                return $this->message("不存在该主题");
+            //获取文章作者用户名以及头像
+            $thread_data['user']=$User->uid_to_user($thread_data['uid']);
+            $thread_data['avatar']=$this->avatar($thread_data['user']);
+            $this->CacheObj->set('thread_data_'.$tid,$thread_data);
+            //{hook a_thread_empty_cache_2}
+        }
+        $page_count = ($post_data['posts'] % $Show_mun != 0)?(intval($post_data['posts']/$Show_mun)+1) : intval($post_data['posts']/$Show_mun);
+
+        $this->v('page_count',$page_count);
+        $this->v('thread_data',$thread_data);
+        $this->v('post_data',$post_data);
+        $this->v('count',$count);
+        $this->v('post_post_data',$post_post_data);
+
+
+        $this->display('thread_post');
     }
     //删除主题，  不是删除评论！
     public function del(){

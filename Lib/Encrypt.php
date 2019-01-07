@@ -112,21 +112,7 @@ class Encrypt {
         $txt = str_replace('%252F', '%2F', $txt);
         return $this->xxtea_decrypt(base64_decode(urldecode($txt)), $key);
     }
-    public function encryptA($arr){
-        $string = base64_encode ( json_encode($arr) );   
-        $key = base64_encode ( '123456' );   
-        $len = strlen ( $key );  
-        $code = '';   
-        for($i = 0; $i < strlen ( $string ); $i ++) {       
-         $k = $i % $len;       
-         $code .= $string [$i] ^ $key [$k];   
-        }   
-
-        $s = urlencode(base64_encode($code));
-        $s = str_replace('%2F', '%252F', $s);
-        return $s;   
-    }
-
+    
 }
 
 

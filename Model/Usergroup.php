@@ -33,5 +33,40 @@ class Usergroup extends Model {
             $usergroup[intval($v['gid'])] = $v;
         }
     }
+    //检测升级
+    public function check_up($uid){
+        $User = M('User');
+        $data = $User->get_row($uid,['gid','credits']);
+        $now_gid = $data['gid'];
+        $credits = $data['credits'];
+        //管理员无法触发升级
+        if($now_gid != C('ADMIN_GROUP')){
+            $usergroup = $this->select('*');
+            $this->format($usergroup);
+            //如果本身所在用户组是无法升级的 则跳过升级
+            if($usergroup[$now_gid]['credits'] == -1 || $usergroup[$now_gid]['credits_max'] == -1)
+                return false;
+            //删除当前所在用户组
+            unset($usergroup[$now_gid]);
+            //是否被升级
+            $up = false;
+            //过滤无法升级的用户组
+            foreach ($usergroup as $k => &$v) {
+                if($v['credits'] == -1 || $v['credits_max'] == -1)
+                    unset($usergroup[$k]);
+            }
+            //var_dump($usergroup);
+            unset($v);
+            foreach ($usergroup as $k => $v) {
+                if($credits >= $v['credits'] && $credits <= $v['credits_max']){
+                    $User->set_gid($uid,$v['gid']);
+                    $up=true;
+                    break;
+                }
+            }
+            return $up;
+        }
+        return false;
+    }
     //{hook m_usergroup_fun}
 }

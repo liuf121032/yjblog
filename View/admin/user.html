@@ -5,21 +5,9 @@
     <div class="main-container">
         <div class="padding-md">
             <h2 class="header-text no-margin">
-                用户 - 管理
+                用户管理
             </h2>
-            <div class="gallery-filter m-top-md m-bottom-md">
-                <ul class="clearfix">
-                    <li class="active"><a href="javascript:void(0)" data-toggle="modal" data-target="#normalModal"><i class="fa fa-plus"></i> 添加用户</a></li>
-                </ul>
-            </div>
-            <style>
-            .table-striped>tbody>tr {}
-            </style>
             <script>
-            (function() {
-
-            });
-
             function edit_forum(uid, user, gid, email, gold, credits) {
 
                 $("#edit0").val(uid);
@@ -39,7 +27,7 @@
 
                 $(obj).attr("disabled", true);
 
-                $.post('{php HYBBS_URL('admin ','user ')}', { id: id, gn: 4 },
+                $.post('{php HYBBS_URL('admin','user')}', { id: id, gn: 4 },
                     function(e) {
                         $(obj).removeAttr("disabled");
                         if (e.error) {
@@ -55,7 +43,7 @@
                         <span class="stat-icon bg-info bounceIn animation-delay3"><i class="fa fa-users"></i></span>
                         <div class="stat-info">
                             <small class="text-muted text-upper">站点用户数量</small>
-                            <span>{$user_count}</span>
+                            <span>{php echo S('User')->count()}</span>
                         </div>
                     </div>
                 </div>
@@ -64,40 +52,104 @@
                         <span class="stat-icon bg-success bounceIn animation-delay3"><i class="fa fa-user-plus"></i></span>
                         <div class="stat-info">
                             <small class="text-muted text-upper">今日注册</small>
-                            <span>{$day_count}</span>
+                            <span>{php echo S('User')->count(['atime[>]'=>strtotime(date('Y-m-d'))])}</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row" style="margin-top: 10px;">
-                <form method="get">
-                    <input type="hidden" name="s" value="{php echo URL('admin','user')}" />
-                    <input type="hidden" name="gn" value="1" />
-                    <div class="col-md-4 col-xs-12">
-                        <div class="form-group">
-                            <label>搜索用户 (用户名，UID或邮箱名)</label>
-                            <input name="user" type="text" class="form-control" value="{if isset($skey)}{$skey}{/if}" placeholder="关键字">
-                        </div>
+            <div id="">
+                <button class="btn btn-success" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="fa fa-search" aria-hidden="true"></span> 搜索用户
+                </button>
+
+                <button class="btn btn-success" href="javascript:void(0)" data-toggle="modal" data-target="#normalModal"><i class="fa fa-plus"></i> 添加用户</button>
+
+                <div style="margin-top:10px" class="collapse {if X('get.search_submit')}in{/if}" id="collapseExample">
+                    <div class="well">
+                        <form action="{php HYBBS_URL(ACTION_NAME,METHOD_NAME,['pageid'=>1])}" method="get" class="form-horizontal" onsubmit="return search_from(this)">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label for="uid" class="col-sm-2 control-label">UID</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="uid" placeholder="完整用户UID" value="{php echo X('get.uid')}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="user" class="col-sm-2 control-label">用户名</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" name="user" class="form-control" placeholder="完整用户名" value="{php echo X('get.user')}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="user_key" class="col-sm-2 control-label">模糊用户名</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="user_key" placeholder="模糊搜索用户名" value="{php echo X('get.user_key')}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email" class="col-sm-2 control-label">邮箱</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="email" placeholder="完整邮箱" value="{php echo X('get.email')}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email_key" class="col-sm-2 control-label">模糊邮箱</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="email_key" placeholder="筛选某文章下的评论, 输入完整TID" value="{php echo X('get.email_key')}">
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label for="gid" class="col-sm-2 control-label">用户组</label>
+                                        <div class="col-sm-10">
+                                            <select name="gid" class="form-control">
+                                              <option value="-1">不筛选</option>
+                                              {foreach S('usergroup')->select('*',['ORDER'=>['gid'=>'ASC']]) as $v}
+                                              <option value="{$v.gid}" {if X('get.gid') == $v['gid']}selected{/if}>[{$v.gid}] {$v.name}</option>
+                                              {/foreach}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="" class="col-sm-2 control-label">登陆状态</label>
+                                        <div class="col-sm-10">
+                                          <select name="ban_login" class="form-control">
+                                              <option value="0">不筛选</option>
+                                              <option value="1" {if X('get.ban_login') == 1}selected{/if}>允许登陆</option>
+                                              <option value="2" {if X('get.ban_login') == 2}selected{/if}>禁止登陆</option>
+                                          </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="" class="col-sm-2 control-label">发言状态</label>
+                                        <div class="col-sm-10">
+                                          <select name="ban_post" class="form-control">
+                                              <option value="0">不筛选</option>
+                                              <option value="1" {if X('get.ban_post') == 1}selected{/if}>允许发贴</option>
+                                              <option value="2" {if X('get.ban_post') == 2}selected{/if}>禁止发贴</option>
+                                          </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+                                        <div class="col-md-5 col-md-offset-2">
+                                            <input type="hidden" name="search_submit" value="search_submit">
+                                            <button type="submit" name="search_submit" value="search_submit" class="btn btn-primary">
+                                                <span class="fa fa-search" aria-hidden="true"></span> 搜索
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                    <div class="col-md-4 col-xs-12">
-                        <div class="form-group">
-                            <label>筛选用户组</label>
-                            <select class="form-control" name="usergroup">
-                                <option value="0">选择用户组</option>
-                                {foreach $usergroup as $v}
-                                <option value="{$v.gid}" {if isset($sgroup)}{if $sgroup==$v['gid']}selected="selected" {/if}{/if}>{$v.name}</option>
-                                {/foreach}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xs-12">
-                        <label>&nbsp;</label>
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-success btn-sm">筛选</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                </div>
+            </div><!-- 搜索 -->
             <form action="" method="post">
                 <input type="hidden" name="gn" value="del_more">
                 <div class="table-responsive">
@@ -138,18 +190,26 @@
                                 <td>
                                     <p>用户组GID：{$v.gid}</p>
                                     <p>用户组名称：{$usergroup[$v['gid']]['name']}</p>
+                                    {if C('ADMIN_GROUP') != $v['gid']}
                                     <label class="mui-switch-box">
                                         <span>允许登陆：</span>
-                                        <input data-type="login" data-uid="{$v.uid}" class="mui-switch" type="checkbox" {if $v[ 'ban_login']==0 }checked{/if}>
+                                        <input data-type="login" data-uid="{$v.uid}" class='tgl tgl-ios' id='cb1{$v.uid}' type='checkbox' {if $v[ 'ban_login']==0 }checked{/if}>
+                                        <label class='tgl-btn' for='cb1{$v.uid}'></label>
+
                                     </label>
                                     <label style="display:block;margin-top:5px" class="mui-switch-box">
                                         <span>允许发言：</span>
-                                        <input data-type="post" data-uid="{$v.uid}" class="mui-switch" type="checkbox" {if $v[ 'ban_post']==0 }checked{/if}>
+
+                                        <input data-type="post" data-uid="{$v.uid}" class='tgl tgl-ios' id='cb2{$v.uid}' type='checkbox' {if $v[ 'ban_post']==0 }checked{/if}>
+                                        <label class='tgl-btn' for='cb2{$v.uid}'></label>
+
                                     </label>
+                                    {/if}
                                 </td>
                                 <td>
                                     <p>文章数量：{$v.threads}</p>
                                     <p>评论数量：{$v.posts}</p>
+                                    <p>子评论数量：{$v.post_ps}</p>
                                 </td>
                                 <td>
                                     <p>金币数量：{$v.gold}</p>
@@ -174,6 +234,7 @@
                                     <ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
                                         <li><a href="javascript:;" onclick="clean_user({$v.uid},'del_thread')">删除所有文章</a></li>
                                         <li><a href="javascript:;" onclick="clean_user({$v.uid},'del_post')">删除所有评论</a></li>
+                                        <li><a href="javascript:;" onclick="clean_user({$v.uid},'del_post_post')">删除所有子评论</a></li>
                                         <li><a href="javascript:;" onclick="clean_user({$v.uid},'del_file')">删除所有已上传文件</a></li>
                                         <li class="divider"></li>
                                         <li><a href="javascript:;" onclick="clean_user({$v.uid},'del_follow')">清空关注列表</a></li>
@@ -206,14 +267,33 @@
                     </div>
                 </div>
             </form>
-            <div class="smart-widget-body">
-                <a href="{if $pageid==1}javascript:void(0);{else}?pageid={$pageid-1}{$fj}{/if}" class="btn btn-success marginTB-xs" {if $pageid==1}disabled{/if}><i class="fa fa-angle-double-left m-left-xs"></i> 上一页</a>
-                <a href="{if $pageid==$page_count}javascript:void(0);{else}?pageid={$pageid+1}{$fj}{/if}" style="float:right" class="btn btn-success marginTB-xs" {if $pageid==$page_count}disabled{/if}>下一页<i class="fa fa-angle-double-right m-left-xs"></i></a>
-            </div>
+            <nav aria-label="..." class="text-center">
+                <ul class="pagination ">
+                {if $pageid!=1}
+                    <li class="">
+                        <a href="{php HYBBS_URl(ACTION_NAME,METHOD_NAME,['pageid'=>$pageid-1])}{$x}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+                    </li>
+                {/if}
+                <?php $tmp = $page_count ?>
+
+                {for $i=($pageid-5 < 1) ? 1 : $pageid -5; $i< (($pageid + 5 > $tmp) ? $tmp+1 : $pageid + 5) ; $i++}
+                <li class="{if $pageid == $i}active{/if}">
+                    <a href="{php HYBBS_URl(ACTION_NAME,METHOD_NAME,['pageid'=>$i])}{$x}"  >
+                    {$i}
+                    </a>
+                </li>
+                {/for}
+                {if $pageid!=$page_count}
+                <li>
+                    <a href="{php HYBBS_URl(ACTION_NAME,METHOD_NAME,['pageid'=>$pageid+1])}{$x}" aria-label="Next"><span aria-hidden="true">»</span></a>
+                </li>
+                {/if}
+                </ul>
+            </nav>
         </div>
         <!-- ENd box  -->
     </div>
-</div>
+
 <!-- Modal -->
 <form method="post">
     <div class="modal fade" id="normalModal">
@@ -303,7 +383,14 @@
     </div>
 </form>
 <!-- !Modal -->
+
 <script type="text/javascript">
+    function search_from(obj){
+        var data = $(obj).serialize();
+        window.location.href='{php HYBBS_URL(ACTION_NAME,METHOD_NAME)}?'+data;//+'&pageid=1';
+        return false;
+    }
+
     window.onload = function(){
         $('.mui-switch-box input').click(function(){
             var _this = $(this);
@@ -345,6 +432,7 @@
         var a = {
             del_thread:'删除所有文章',
             del_post:'删除所有评论',
+            del_post_post:'删除所有子评论',
             del_file:'删除所有已上传文件',
             del_follow:'清空关注列表',
             del_chat:'清空聊天记录'

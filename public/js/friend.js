@@ -345,7 +345,7 @@ function load_friend(){
             $("#friend-3").append(html3);
             $("#friend-0").append(html0);
             window.friend_pm = 0;
-            setInterval(function(){
+            function friend_pm_call(){
                 $.ajax({
                     url:www+'Friend'+exp+'pm',
                     type:'post',
@@ -404,7 +404,9 @@ function load_friend(){
 
                     }
                 })
-            },5000);
+            }
+            friend_pm_call();
+            setInterval(friend_pm_call,5000);
             
         },
         error:function(){

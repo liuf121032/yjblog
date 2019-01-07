@@ -70,7 +70,6 @@ class Forum extends HYBBS {
             $Thread = M("Thread");
         }
         //{hook a_forum_empty_34}
-
         if(empty($data) || DEBUG){
             //{hook a_forum_empty_4}
             
@@ -86,7 +85,6 @@ class Forum extends HYBBS {
 		
         //{hook a_forum_empty_5}
         //获取全站置顶缓存
-        
         if(empty($top_data) || DEBUG){
             //{hook a_forum_empty_55}
             //全局置顶
@@ -118,7 +116,6 @@ class Forum extends HYBBS {
 		$count = $this->_forum[$fid]['threads'];
 		$count = (!$count)?1:$count;
 		$page_count = ($count % $this->conf['forumlist'] != 0)?(intval($count/$this->conf['forumlist'])+1) : intval($count/$this->conf['forumlist']);
-
         //{hook a_forum_empty_v}
         $this->v("title",$this->_forum[$fid]['name']);
 		$this->v("pageid",$pageid);
