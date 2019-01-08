@@ -67,7 +67,7 @@
 <header>
 	<div id="header" class="container">
 <!--		<a style="color:#0f88eb;font-size: 26px;" href="{#WWW}">{php echo view_form('hybbs','logo')}</a>-->
-		<a style="color:#0f88eb;font-size: 26px;" href="{#WWW}">东湖城-业主委员会在线平台</a>
+		<a style="color:#0f88eb;font-size: 26px;" href="{#WWW}">东湖城_业主在线平台</a>
 <!--		<nav>-->
 <!--			{if view_form('hybbs','menu_forum')}-->
 <!--			{foreach $forum as $v}-->
