@@ -13,7 +13,7 @@
 		        {foreach $forum_group as $vv}
 		            
 		            {if $v['fgid'] == $vv['id']}
-		                <?php $has = true;break; ?>
+		                <?php $has = true; ?>
 		            {/if}
 		            
 		        {/foreach}

@@ -15,7 +15,8 @@
 //----------------------------------
 
 //框架版本
-define('HYPHP_VERSION','2.5');
+define('DhCity_VERSION','1.0.0');
+
 
 //开始记录运行时间，运行内存
 $GLOBALS['START_TIME'] = microtime(TRUE);
@@ -54,24 +55,25 @@ defined('ACTION_PATH')  or define('ACTION_PATH',   PATH.'Action/'); //Action目�
 defined('VIEW_PATH')    or define('VIEW_PATH',     PATH.'View/'); //VIEW
 defined('CONF_PATH')    or define('CONF_PATH',     PATH.'Conf/'); //CONF
 defined('TMP_PATH')     or define('TMP_PATH',      PATH.'Tmp/'); //Tmp
-//defined('TMPHTML_PATH') or define('TMPHTML_PATH',  PATH.'TmpHtml/'); //TmpHtml
+
 defined('MYLIB_PATH')   or define('MYLIB_PATH',    PATH.'Lib/'); //Lib
 defined('MODEL_PATH')   or define('MODEL_PATH',    PATH.'Model/'); //Model
 defined('PLUGIN_PATH')  or define('PLUGIN_PATH',    PATH.'Plugin/'); //插件目录
 
 defined('HY_PATH')      or define('HY_PATH',       __DIR__.'/'); //框架目录
 defined('LIB_PATH')     or define('LIB_PATH',      realpath(HY_PATH.'Lib').'/'); // 系统核心类库目录
-defined('DEBUG')        or define('DEBUG',         false); //是否调试
+defined('DEBUG')        or define('DEBUG',         true); //是否调试
 defined('PLUGIN_ON')    or define('PLUGIN_ON',     false); //插件机制开启
 
 is_dir(ACTION_PATH)    or mkdir(ACTION_PATH);
 is_dir(VIEW_PATH)      or mkdir(VIEW_PATH);
 is_dir(CONF_PATH)      or mkdir(CONF_PATH);
 is_dir(TMP_PATH)       or mkdir(TMP_PATH);
-//is_dir(TMPHTML_PATH)   or mkdir(TMPHTML_PATH);
 is_dir(MYLIB_PATH)     or mkdir(MYLIB_PATH);
 is_dir(MODEL_PATH)     or mkdir(MODEL_PATH);
 is_dir(PLUGIN_PATH)    or mkdir(PLUGIN_PATH);
+
+
 
 is_file(CONF_PATH   . "config.php") or file_put_contents(CONF_PATH   . "config.php","<?php
 return array(
@@ -82,7 +84,7 @@ namespace Action;
 use HY\Action;
 class Index extends Action {
 	public function Index(){
-		echo 'HY框架';
+		echo 'DhCity框架';
 	}
 }");
 

@@ -10,8 +10,8 @@
 	<meta name="keywords" content="{$conf.keywords}">
 	<meta name="description" content="{$conf.description}">
 	<link rel="shortcut icon" href="{#WWW}favicon.ico">
-	<link rel="stylesheet" href="{#WWW}View/hybbs/icon/iconfont.css?var={#HYBBS_V}">
-	<link rel="stylesheet" href="{#WWW}View/hybbs/app.css?var={#HYBBS_V}">
+	<link rel="stylesheet" href="{#WWW}View/hybbs/icon/iconfont.css?var={#DhCity_VERSION}">
+	<link rel="stylesheet" href="{#WWW}View/hybbs/app.css?var={#DhCity_VERSION}">
 	<script>
 	var www = "{#WWW}{#RE}";
 	var WWW = "{#WWW}";
@@ -28,8 +28,8 @@
 
 	{if IS_LOGIN}
 	<!-- 好友系统资源文件 -->
-	<link href="{#WWW}public/css/friend.css?var={#HYBBS_V}" rel="stylesheet">
-	<script src="{#WWW}public/js/friend.js?var={#HYBBS_V}"></script>
+	<link href="{#WWW}public/css/friend.css?var={#DhCity_VERSION}" rel="stylesheet">
+	<script src="{#WWW}public/js/friend.js?var={#DhCity_VERSION}"></script>
 	{/if}
 	<script src="{#WWW}public/js/app.js"></script>
 	
