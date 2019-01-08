@@ -74,7 +74,7 @@
             <p>DhCity © 2016. All Rights Reserved. <a href="http://www.donghu520.cn/">{$conf.logo}</a> </p>
 
             <p>免责申明:本网站内容如有侵权,请联系管理员删帖处理。</p>
-<!--            <p>Powered by <a href="http://www.donghu520.cn/">DhCity</a> Version {#HYBBS_V}</p>-->
+<!--            <p>Powered by <a href="http://www.donghu520.cn/">DhCity</a> Version {#DhCity_VERSION}</p>-->
             {if view_form('hybbs','show_sleep')}
             <p>Runtime:<?php echo number_format(microtime(1) - $GLOBALS['START_TIME'], 4); ?>s Mem:<?php echo round((memory_get_usage() - $GLOBALS['START_MEMORY'])/1024); ?>Kb</p>
             {/if}

@@ -349,3 +349,54 @@ function HYBBS_URL($action,$method='',$age=[],$ext=''){
 function HYBBS_URLA($action,$method='',$age=[],$ext=''){
   return WWW.(C('REWRITE')? '':'?').URL($action,$method,$age,$ext);
 }
+function pre($param=null)
+{
+    echo "<pre>".print_r($param,true)."</pre>";
+}
+
+function br()
+{
+    echo "&nbsp;&nbsp;&nbsp;<font color='blue'>↓↓↓</font><br><br>";
+}
+//获取当天剩下多少秒
+function reSecond()
+{
+    $t=time();
+    $end=mktime(23,59,59,date("m",$t),date("d",$t),date("Y",$t));
+    $second=$end-$t;
+    return $second;
+}
+function jsonOut($rs)
+{
+    // header("Access-Control-Allow-Origin:*");
+    header("Content-type", "application/json");
+    header("Content-type:text/html;charset=utf-8");
+    if (is_array($rs)) {
+        $rs = json_encode($rs, JSON_UNESCAPED_UNICODE);
+    }
+    return $rs;
+}
+
+function post($val)
+{
+    if(!empty($_POST[$val])){
+        return addslashes($_POST[$val]);
+    }else{
+        return false;
+    }
+}
+
+function get($val)
+{
+    if(!empty($_GET[$val])){
+        return addslashes($_GET[$val]);
+    }else{
+        return false;
+    }
+}
+
+function returnArr($status, $data, $msg)
+{
+    $arr=array('code'=>(int)$status,'data'=>$data,'msg'=>$msg);
+    return $arr;
+}

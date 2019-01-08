@@ -2040,15 +2040,15 @@ function plugin_uninstall(){
 
     }
     public function hybbsupdate2(){
-        $data = file_get_contents(C("PLUGIN_DOWN").'ajax/update2');
-        $info = file_get_contents(C("PLUGIN_DOWN").'ajax/update_info');
-        
-        if(!empty($data)){
-            //$json = json_decode($data,true);
-            if($data != HYBBS_V)
-                $this->json(array('error'=>true,'info'=>$data,'json'=>json_decode($info)));
-
-        }
+//        $data = file_get_contents(C("PLUGIN_DOWN").'ajax/update2');
+//        $info = file_get_contents(C("PLUGIN_DOWN").'ajax/update_info');
+//
+//        if(!empty($data)){
+//            //$json = json_decode($data,true);
+//            if($data != HYBBS_V)
+//                $this->json(array('error'=>true,'info'=>$data,'json'=>json_decode($info)));
+//
+//        }
         $this->json(array('error'=>false,'info'=>'无更新'));
     }
     public function update2(){
