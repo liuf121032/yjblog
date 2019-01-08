@@ -101,7 +101,7 @@
 		<div class="pull-right menu-box">
 			{if !IS_LOGIN}
 				<a href="{php HYBBS_URL('user','login');}" style="margin-right: 5px;" class="btn">{$_LANG['登录']}</a>
-				<a href="{php HYBBS_URL('user','add');}" style="margin-right: 5px;" class="btn btn-primary">{$_LANG['注册']}</a>
+<!--				<a href="{php HYBBS_URL('user','add');}" style="margin-right: 5px;" class="btn btn-primary">{$_LANG['注册']}</a>-->
 				
 			{else}
 				<a href="javascript:void(0);" style="margin-right:10px" onclick="$('.friend-box').toggleClass('friend-box-a');">
