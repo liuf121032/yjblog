@@ -1,5 +1,4 @@
 <?php
-define('LSystem','local');
 $common = array(
     'DEBUG_PAGE'=>true,
     'REWRITE'=>false,//伪静态规则
